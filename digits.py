@@ -11,8 +11,7 @@ from scipy.ndimage import filters
 import urllib
 from numpy import random
 
-# import cPickle
-import pickle
+import pickle as cPickle
 import os
 from scipy.io import loadmat
 
@@ -81,40 +80,44 @@ def part1():
 
     
     
-def part2():
-    print("Running part 2 code...")
-    
-    #Load sample weights for the multilayer neural network
-    f = open("snapshot50.pkl","rb")
-    snapshot = cPickle.load(f)     # 300 nodes
-    W0 = snapshot["W0"]
-    b0 = snapshot["b0"].reshape((300,1))
-    W1 = snapshot["W1"]
-    b1 = snapshot["b1"].reshape((10,1)) # 10 biases for 10 digits(0-9)
+# def part2():
+print("Running part 2 code...")
+
+# works up to digits 1-3, nt 0, 4-9
+img  = "train3"
+
+#Load sample weights for the multilayer neural network
+snapshot = cPickle.load(open("snapshot50.pkl","rb"), encoding="latin1")     # 300 nodes
+
+W0 = snapshot["W0"]
+b0 = snapshot["b0"].reshape((300,1))
+W1 = snapshot["W1"]
+b1 = snapshot["b1"].reshape((10,1)) # 10 biases for 10 digits(0-9)
+
+
+# Load one example from the training set, and run it through the
+# neural network to predict what digit it is
+x = M[img][148:149].T    
+L0, L1, output = forward(x, W0, b0, W1, b1)
+
+# get the index at which the output is the largest, the most likely digit
+# found in this image
+y = argmax(output)
+
+print("actual digit: {:s}".format(img[-1]))
+print("predicted digit: {:d}".format(y))
+
+
+y_true = array([[0, 0, 0, 0, 0, 1, 0, 0, 0, 0]]).T
+
 
     
-    #Load one example from the training set, and run it through the
-    #neural network
-    x = M["train5"][148:149].T    
-    L0, L1, output = forward(x, W0, b0, W1, b1)
-    #get the index at which the output is the largest
-    y = argmax(output)
-    print(y)
-    
-    y_true = array([[0, 0, 0, 0, 0, 1, 0, 0, 0, 0]]).T
-    print(deriv_multilayer(x, L0, L1, output, y_true))
-    ################################################################################
-    #Code for displaying a feature from the weight matrix mW
-    #fig = figure(1)
-    #ax = fig.gca()    
-    #heatmap = ax.imshow(mW[:,50].reshape((28,28)), cmap = cm.coolwarm)    
-    #fig.colorbar(heatmap, shrink = 0.5, aspect=5)
-    #show()
-    ################################################################################
-        
-   
-    
-def part3():
-    print("Running part code...")
-    
-
+#print(deriv_multilayer(W0, b0, W1, b1, x, L0, L1, output, y_true))
+################################################################################
+#Code for displaying a feature from the weight matrix mW
+#fig = figure(1)
+#ax = fig.gca()    
+#heatmap = ax.imshow(mW[:,50].reshape((28,28)), cmap = cm.coolwarm)    
+#fig.colorbar(heatmap, shrink = 0.5, aspect=5)
+#show()
+################################################################################
