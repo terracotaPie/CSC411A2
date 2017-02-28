@@ -45,6 +45,9 @@ def forward(x, W0, b0, W1, b1):
 def cross_entropy(y, y_):
     return -sum(y_*log(y)) 
 
+def NLL(y, y_):
+    return -sum(y_*log(y)) 
+
 def deriv_multilayer(W0, b0, W1, b1, x, L0, L1, y, y_):
     '''Incomplete function for computing the gradient of the cross-entropy
     cost function w.r.t the parameters of a neural network - NOT WORKING'''
@@ -136,3 +139,35 @@ def part2():
     #fig.colorbar(heatmap, shrink = 0.5, aspect=5)
     #show()
     ################################################################################
+
+''' For part 3a, a negative log likelihood cost function
+    y is a n * m vector
+    m = # of cases(images)
+    n = number of inputs(pixels per image)
+'''
+def C(y, outputs):
+    e_oi = [e**o_i for o_i in outputs]
+    denominator = sum([e**o_j for o_j in outputs])
+    
+    p = (element/denominator for element in e_oi)
+    
+    return -dot(y, log(p))
+    
+
+def dCdw(p, y):
+    e_oi = [e**o_i for o_i in outputs]
+    denominator = sum([e**o_j for o_j in outputs])
+    p = (element/denominator for element in e_oi)
+        
+    dCdo = p - y
+    
+    # o_i = sum_j w_ji x_j + b_i
+    dodw = sum(x + b0)
+    
+    return dCdo * dodw
+
+
+
+
+
+
