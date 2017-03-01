@@ -141,33 +141,42 @@ def part2():
     ################################################################################
 
 ''' For part 3a, a negative log likelihood cost function
-    y is a n * m vector
-    m = # of cases(images)
-    n = number of inputs(pixels per image)
+    y is a n * m vector of targets/labels
+        m = # of cases(images)
+        n = number of inputs(pixels per image)
+    y_hat are predicted targets, the one-hot encoded probabilities we get from 
+    the NN.
+    the p_i's from slide 7 of the one-hot encoding slides on Guerzhoy's site
 '''
 def C(y, outputs):
-    e_oi = [e**o_i for o_i in outputs]
-    denominator = sum([e**o_j for o_j in outputs])
-    
-    p = (element/denominator for element in e_oi)
-    
-    return -dot(y, log(p))
+    return -sum(y * log(y_hat))
     
 
-def dCdw(p, y):
-    e_oi = [e**o_i for o_i in outputs]
-    denominator = sum([e**o_j for o_j in outputs])
-    p = (element/denominator for element in e_oi)
-        
-    dCdo = p - y
+'''
+    Compute gradient of the negative log cost function C()
     
-    # o_i = sum_j w_ji x_j + b_i
-    dodw = sum(x + b0)
+    We know that:
+    dC/dw = dC/do * do/dw
+'''
+def dCdw(x, y, y_hat, w, b):
+    dCdo = y_hat - y
     
-    return dCdo * dodw
+   
+    # append x_o = 1 to x vector
+    temp = vstack((ones((1, x.shape[1])), x))))
+    
+    # o_i = x_j + b_i    from P2 handout in Part 2 description
+    # so dodw = x_j + b_i
+    dodw = temp
+    
+    
+    return dot(dCdo.T, dodw)
 
-
-
-
-
-
+# 
+# '''
+#      Verify that the gradient of the cost function, dCdw() is correct with finite
+#      difference approximation.
+# '''
+# def part4():
+#     # TODO: plot learning curve of training set with x pics per digit versus performance, classifier accuracy
+#     
