@@ -234,29 +234,34 @@ def deriv_multilayer(W0, b0, W1, b1, x, L0, L1, y, y_):
 %----------------------------------------------------------------------------------------
 \begin{homeworkProblem}
       \begin{lstlisting}[language=python,numbers=left]
-def train(W0, b0, W1, b1):
+plot_iters = []
+plot_performance = []
+def train(plot=False):
+    global W0, b0, W1, b1
+    global plot_iters, plot_performance
     alpha = 1e-3
     for i in xrange(50):
-        training_iters = 50
-        X, Y = get_batch(i * 5)
+        X, Y, examples_n = get_batch(i * 5)
 
         update = np.zeros(4)
 
-        for i in xrange(training_iters):
-            y = Y[i].reshape((10, 1))
-            x = X[i].reshape((28 * 28, 1))
+        for j in xrange(examples_n):
+            y = Y[j].reshape((10, 1))
+            x = X[j].reshape((28 * 28, 1))
             L0, L1, output = forward(x, W0, b0, W1, b1)
             gradients = deriv_multilayer(W0, b0, W1, b1, x, L0, L1, output, y)
-            update = [update[i] + gradients[i] for i in range(len(gradients))]
+            update = [update[k] + gradients[k] for k in range(len(gradients))]
 
         # update the weights 
         W1 -= alpha * update[0]
         b1 -= alpha * update[1]
         W0 -= alpha * update[2]
         b0 -= alpha * update[3]
-    return W0, b0, W1, b1
-
-W0, b0, W1, b1 = train(W0, b0, W1, b1)
+        if plot:
+            plot_iters.append(i * examples_n)
+            plot_performance.append(test_perf())
+            
+train(plot=True)
       \end{lstlisting}
       \begin{lstlisting}[language=python,numbers=left]
 def get_batch(offset):
@@ -272,6 +277,7 @@ def get_batch(offset):
             y_batch[i * example_per_class + j][i] = 1
     return x_batch, y_batch
       \end{lstlisting}
+  \includegraphics[]{images/performance.png}
 \end{homeworkProblem}
 
 \end{document}
