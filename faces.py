@@ -70,14 +70,14 @@ def get_img_sets(train_imgs_per_actor, val_imgs_per_actor, test_imgs_per_actor):
     # build the validation set of 30 images
     for a in ACTORS:
         for i in range(val_imgs_per_actor):
-            if imgs[a][i][0] not in used_imgs:
+            if (imgs[a][i][0] not in used_imgs) == False:
                 validation_set[a].append(imgs[a][i][1])   # get the image
                 used_imgs.append(imgs[a][i][0])   # keep track of imags used in another set already
     
     # build the test set with 30 validation sets per user
     for a in ACTORS:
         for i in range(test_imgs_per_actor):
-            if imgs[a][i][0] not in used_imgs:
+            if (imgs[a][i][0] not in used_imgs) == False:
                 test_set[a].append(imgs[a][i][1])   # get the image
                 used_imgs.append(imgs[a][i][0])     # get the filename of the image
     
@@ -129,8 +129,6 @@ def preprocess(img_set):
             preprocessed_img = (ndarray.flatten(np.array(img))-127)/255
             one_hot = zeros(6)
             one_hot[ACTORS.index(a)] = 1
-            print("prepped img shape", shape(preprocessed_img))
-            print("onehot encoding", one_hot)
             # append the img vector and its label to the X and Y vector
             batch_xs = vstack((batch_xs, preprocessed_img))
             batch_y_s = vstack((batch_y_s, one_hot))
@@ -266,10 +264,9 @@ accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 
 ## train the NN
 #for i in range(5000):
-for i in range(500):
-    #print(i)
-   
-
+for i in range(5000):
+    print("i=",i)
+    
     # output info at each step
     if i % 1 == 0:
         # get values of tensor
@@ -287,10 +284,12 @@ for i in range(500):
         validation_acc.append(validation_val)
         test_acc.append(test_val)
         
-        print("i=",i)
+        
+
+        print("Train:", training_val)
+        print("Validation:", validation_val)
         print("Test:", test_val)
         
-        print("Train:", training_val)
         print("Penalty:", sess.run(decay_penalty))
 
 ## end TensorFlow session
