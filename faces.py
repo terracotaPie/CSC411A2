@@ -31,15 +31,16 @@ num_labels = 6
 ACTORS =['Fran Drescher', 'America Ferrera', 'Kristin Chenoweth', 'Alec Baldwin', 'Bill Hader', 'Steve Carell']
 
 
-SAVED_IMGS = os.getcwd() + '/actor_imgs.p'
-# SAVED_IMGS = os.getcwd() + '/img_data/tf/x`
+SAVED_IMGS = os.getcwd() + '/img_data/tf/actor_imgs.p'
 def get_img_sets(train_imgs_per_actor, val_imgs_per_actor, test_imgs_per_actor):
     f = open(SAVED_IMGS, 'rb')
     imgs = cPickle.load(f)
     f.close()
+    
     training_set = {}
     validation_set = {}
     test_set = {}
+    shuffled_imgs = {}
     
     # initialize dictionaries
     for a in ACTORS:
@@ -48,7 +49,7 @@ def get_img_sets(train_imgs_per_actor, val_imgs_per_actor, test_imgs_per_actor):
         test_set[a] = []
         
         # shuffle the images to randomize them
-        imgs[a] = shuffle(imgs[a])
+        shuffled_imgs[a] = shuffle(imgs[a])
     
     used_imgs = []
 
@@ -65,14 +66,13 @@ def get_img_sets(train_imgs_per_actor, val_imgs_per_actor, test_imgs_per_actor):
         for i in range(train_imgs_per_actor):
             training_set[a].append(imgs[a][i][1])   # get the image
             used_imgs.append(imgs[a][i][0])     # get the filename of the image
-    
+    print("len(used_imgs)", len(used_imgs))
     # build the validation set of 30 images
     for a in ACTORS:
         for i in range(val_imgs_per_actor):
             if imgs[a][i][0] not in used_imgs:
                 validation_set[a].append(imgs[a][i][1])   # get the image
-                used_imgs.append(imgs[a][i][0])     # get the filename of the image
-    
+                used_imgs.append(imgs[a][i][0])   # keep track of imags used in another set already
     
     # build the test set with 30 validation sets per user
     for a in ACTORS:
@@ -80,6 +80,7 @@ def get_img_sets(train_imgs_per_actor, val_imgs_per_actor, test_imgs_per_actor):
             if imgs[a][i][0] not in used_imgs:
                 test_set[a].append(imgs[a][i][1])   # get the image
                 used_imgs.append(imgs[a][i][0])     # get the filename of the image
+    
     return training_set, validation_set, test_set
 
 
@@ -120,17 +121,19 @@ def get_img_sets(train_imgs_per_actor, val_imgs_per_actor, test_imgs_per_actor):
 def preprocess(img_set):
     batch_xs = zeros((0, 28*28))
     batch_y_s = zeros( (0, num_labels))
+    print("IN PREPROCESS")
     
     for a in ACTORS:
-        for img in img_set:
+        for img in img_set[a]:
             # normalize the image
-            preprocessed_img = (ndarray.flatten(img)-127)/255
+            preprocessed_img = (ndarray.flatten(np.array(img))-127)/255
             one_hot = zeros(6)
             one_hot[ACTORS.index(a)] = 1
-            
+            print("prepped img shape", shape(preprocessed_img))
+            print("onehot encoding", one_hot)
             # append the img vector and its label to the X and Y vector
-            batch_xs = vstack((batch_xs, preprocessed_img)
-            batch_y_s = vstack((batch_y_s, one_hot)
+            batch_xs = vstack((batch_xs, preprocessed_img))
+            batch_y_s = vstack((batch_y_s, one_hot))
 
     return batch_xs, batch_y_s
     
@@ -196,7 +199,7 @@ PICKLED_ACTORS = os.getcwd() + "/img_data/actor_imgs.p"  # lol ew
 
 # https://piazza.com/class/iu4xr8zpnvo7k0?cid=364
 # initialize weights and biases to some random number
-tf.random.seed(239782384)
+
 x = tf.placeholder(tf.float32, [None, 784])
 # 
 # snapshot = cPickle.load(open("snapshot50.pkl", 'rb'), encoding="latin1")
@@ -240,9 +243,8 @@ sess.run(init)
 correct_prediction = tf.equal(tf.argmax(y,1), tf.argmax(y_,1))
 accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 
-training_set, validation_set, test_set = get_img_sets()
-batch_xs, batch_ys = get_xy(training_set)
-preprocess_imgs = batch_xs
+training_set, validation_set, test_set = get_img_sets(90, 30, 30)
+batch_xs, batch_ys = preprocess(training_set)
 test_x, test_y = preprocess(test_set)
 validation_x, validation_y = preprocess(validation_set)
 
@@ -252,6 +254,10 @@ training_acc = []
 validation_acc = []
 test_acc = []
 
+sess.run(train_step, feed_dict={x: batch_xs, y_: batch_ys})
+
+correct_prediction = tf.equal(tf.argmax(y,1), tf.argmax(y_,1))
+accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 
 ## preprocess the images:load in img, grayscale, normalize and flatten it
 
@@ -260,34 +266,33 @@ test_acc = []
 
 ## train the NN
 #for i in range(5000):
-for i in range(100):
-  #print(i)  
-  
-  sess.run(train_step, feed_dict={x: batch_xs, y_: batch_ys})
-  
-  # output info at each step
-  if i % 1 == 0:
-    # get values of tensor
-    training_val = sess.run(accuracy, feed_dict={x: test_x, y_: test_y})
-    validation_val = sess.run(accuracy, feed_dict={validation_x, y_: validation_y})
-    test_val = sess.run(accuracy, feed_dict={x: batch_xs, y_: batch_ys})
-    
-    # record NN performance across training, test and validation sets
-    # to graph later with the following variables per axis:
-    # x-axis: x_vals
-    # y_axis: train_acc, test_acc, val_acc
-    #
-    x_vals.append(i)
-    training_acc.append(training_val)
-    validation_acc.append(validation_val)
-    test_acc.append(test_val)
-    
-    print("i=",i)
-    print("Test:", test_val)
+for i in range(500):
+    #print(i)
+   
 
-    print("Train:", training_val)
-    print("Penalty:", sess.run(decay_penalty))
-    
+    # output info at each step
+    if i % 1 == 0:
+        # get values of tensor
+        test_val = sess.run(accuracy, feed_dict={x: test_x, y_: test_y})
+        validation_val = sess.run(accuracy, feed_dict={x:validation_x, y_: validation_y})
+        training_val = sess.run(accuracy, feed_dict={x: batch_xs, y_: batch_ys})
+        
+        # record NN performance across training, test and validation sets
+        # to graph later with the following variables per axis:
+        # x-axis: x_vals
+        # y_axis: train_acc, test_acc, val_acc
+        #
+        x_vals.append(i)
+        training_acc.append(training_val)
+        validation_acc.append(validation_val)
+        test_acc.append(test_val)
+        
+        print("i=",i)
+        print("Test:", test_val)
+        
+        print("Train:", training_val)
+        print("Penalty:", sess.run(decay_penalty))
+
 ## end TensorFlow session
 sess.close()
 
@@ -301,7 +306,7 @@ plt.ylabel('Percentage of Correctly Predicted Labels')
 # plot the learning curves
 plt.plot(x_vals, training_acc, 'ro-')
 plt.plot(x_vals, validation_acc, 'go-')
-plt.plot(x_vals, testing_acc, 'bo-')
+plt.plot(x_vals, test_acc, 'bo-')
 
 # save the graph in a png
 plt.savefig('p7_perf.png', bbox_inches='tight')
