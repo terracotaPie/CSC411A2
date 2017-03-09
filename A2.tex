@@ -28,6 +28,7 @@
 \usepackage{fancyhdr} % Required for custom headers
 \usepackage{lastpage} % Required to determine the last page for the footer
 \usepackage{extramarks} % Required for headers and footers
+\usepackage{minted}
 \usepackage[usenames,dvipsnames]{color} % Required for custom colors
 \usepackage{graphicx} % Required to insert images
 \usepackage{subcaption}
@@ -206,11 +207,11 @@
 \begin{homeworkProblem}
 \noindent \textit{Compute the network function by propagating forward and
   discarding intermediate results}
-\begin{lstlisting}[language=python,numbers=left]
+  \begin{minted}[frame=lines, framesep=2mm, baselinestretch=1.2, linenos]{python}
 def compute_network(x, W0, b0, W1, b1):
     _,_, output = forward(x, W0, b0, W1, b1)
     return = argmax(output)
-\end{lstlisting}
+\end{minted}
 \end{homeworkProblem}
 %----------------------------------------------------------------------------------------
 %	PART 3 
@@ -219,45 +220,45 @@ def compute_network(x, W0, b0, W1, b1):
   \begin{enumerate}
     \item We will use negative log-probabilities as our cost function, and find
       its gradient
-      \begin{lstlisting}[language=python,numbers=left]
+  \begin{minted}[frame=lines, framesep=2mm, baselinestretch=1.2, linenos]{python}
 def cross_entropy(y, y_):
   return -sum(y_ * log(y))
-      \end{lstlisting}
+      \end{minted}
     \item Vectorized code for computing gradient of the cost function
-      \begin{lstlisting}[language=python,numbers=left]
+  \begin{minted}[frame=lines, framesep=2mm, baselinestretch=1.2, linenos]{python}
 def deriv_multilayer(W0, b0, W1, b1, x, L0, L1, y, y_):
     dCdL1 = y - y_
     dCdW1 = dot(L0, dCdL1.T)
     dCdobydodh = dot(W1, dCdL1)
-    one_minus_h_sq = 1 - L0**2
+    diff = 1 - L0**2
 
-    dCdW0 = tile(dCdobydodh, 28 * 28).T * dot(x, (one_minus_h_sq.T))
+    dCdW0 = tile(dCdobydodh, 28 * 28).T * dot(x, (diff.T))
     dCdb1 = dCdL1
-    dCdb0 = dCdobydodh * one_minus_h_sq
+    dCdb0 = dCdobydodh * diff
 
     return dCdW1, dCdb1, dCdW0, dCdb0
-      \end{lstlisting}
+      \end{minted}
   \end{enumerate}
 \end{homeworkProblem}
 %----------------------------------------------------------------------------------------
 %	PART 4 
 %----------------------------------------------------------------------------------------
 \begin{homeworkProblem}
-      \begin{lstlisting}[language=python,numbers=left]
-plot_iters = []
-plot_performance = []
+  \begin{minted}[frame=lines, framesep=2mm, baselinestretch=1.2, linenos]{python}
 def train(plot=False):
     global W0, b0, W1, b1
     global plot_iters, plot_performance
+    plot_iters = []
+    plot_performance = []
     alpha = 1e-3
-    for i in xrange(50):
-        X, Y, examples_n = get_batch(i * 5)
+    for i in range(150):
+        X, Y, examples_n = get_batch(i * 5,10)
 
         update = np.zeros(4)
 
-        for j in xrange(examples_n):
+        for j in range(examples_n):
             y = Y[j].reshape((10, 1))
-            x = X[j].reshape((28 * 28, 1))
+            x = X[j].reshape((28 * 28, 1)) / 255.
             L0, L1, output = forward(x, W0, b0, W1, b1)
             gradients = deriv_multilayer(W0, b0, W1, b1, x, L0, L1, output, y)
             update = [update[k] + gradients[k] for k in range(len(gradients))]
@@ -270,24 +271,40 @@ def train(plot=False):
         if plot:
             plot_iters.append(i * examples_n)
             plot_performance.append(test_perf())
-            
+    return plot_iters,plot_performance
 train(plot=True)
-      \end{lstlisting}
-      \begin{lstlisting}[language=python,numbers=left]
-def get_batch(offset):
+      \end{minted}
+    \begin{minted}[frame=lines, framesep=2mm, baselinestretch=1.2, linenos]{python}
+def get_batch(offset,example_per_class=5):
     # 5 examples per class
-    example_per_class = 5
     classes_num = 10
     x_batch = np.zeros((example_per_class * classes_num, 28 * 28))
     y_batch = np.zeros((example_per_class * classes_num, classes_num))
-    for i in xrange(classes_num):
-        for j in xrange(example_per_class):
+    for i in range(classes_num):
+        for j in range(example_per_class):
             x_batch[i * example_per_class + j] = M['train' + str(i)][j +
                                                                      offset]
             y_batch[i * example_per_class + j][i] = 1
-    return x_batch, y_batch
-      \end{lstlisting}
+    return x_batch, y_batch, example_per_class * classes_num
+      \end{minted}
   \includegraphics[]{images/performance.png}
+\end{homeworkProblem}
+%----------------------------------------------------------------------------------------
+%	PART 5 
+%----------------------------------------------------------------------------------------
+\begin{homeworkProblem}
+  So as discussed in lecture large errors are penalized quadratically in linear
+  regressions. So our multinomial regression doesn't suffer from it. We start
+  with generating a noise for our data set. 
+  \begin{minted}[frame=lines, framesep=2mm, baselinestretch=1.2, linenos, mathescape,gobble=2]{python}
+# generate noise and $N(0, \sigma^2)$
+noise = scipy.stats.norm.rvs(scale=5,size=784*50*10)
+noise = noise.reshape(500,784)
+X,Y,n = get_batch(offset=0,examples=50)
+X += noise
+  \end{minted}
+  After modifying our data set with noise - we get images that look like this: \\
+  \includegraphics[scale=0.5]{images/noise_image.png}
 \end{homeworkProblem}
 
 \end{document}
