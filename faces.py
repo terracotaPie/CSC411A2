@@ -28,10 +28,12 @@ import tensorflow as tf
 
 # added this
 num_labels = 6
-act =['Fran Drescher', 'America Ferrera', 'Kristin Chenoweth', 'Alec Baldwin', 'Bill Hader', 'Steve Carell']
+ACTORS =['Fran Drescher', 'America Ferrera', 'Kristin Chenoweth', 'Alec Baldwin', 'Bill Hader', 'Steve Carell']
 
-SAVED_IMGS = os.getcwd() + '/img_data/tf/actor_imgs.p'
-def get_img_sets():
+
+SAVED_IMGS = os.getcwd() + '/actor_imgs.p'
+# SAVED_IMGS = os.getcwd() + '/img_data/tf/x`
+def get_img_sets(train_imgs_per_actor, val_imgs_per_actor, test_imgs_per_actor):
     f = open(SAVED_IMGS, 'rb')
     imgs = cPickle.load(f)
     f.close()
@@ -40,10 +42,13 @@ def get_img_sets():
     test_set = {}
     
     # initialize dictionaries
-    for a in act:
+    for a in ACTORS:
         training_set[a] = []
         validation_set[a] = []
         test_set[a] = []
+        
+        # shuffle the images to randomize them
+        imgs[a] = shuffle(imgs[a])
     
     used_imgs = []
 
@@ -56,86 +61,107 @@ def get_img_sets():
     # 90 training
     
     # build the training set of 90 images
-    for a in act:
-        for i in range(90):
+    for a in ACTORS:
+        for i in range(train_imgs_per_actor):
             training_set[a].append(imgs[a][i][1])   # get the image
             used_imgs.append(imgs[a][i][0])     # get the filename of the image
     
     # build the validation set of 30 images
-    for a in act:
-        for i in range(30):
+    for a in ACTORS:
+        for i in range(val_imgs_per_actor):
             if imgs[a][i][0] not in used_imgs:
                 validation_set[a].append(imgs[a][i][1])   # get the image
                 used_imgs.append(imgs[a][i][0])     # get the filename of the image
     
     
     # build the test set with 30 validation sets per user
-    for a in act:
-        for i in range(30):
+    for a in ACTORS:
+        for i in range(test_imgs_per_actor):
             if imgs[a][i][0] not in used_imgs:
                 test_set[a].append(imgs[a][i][1])   # get the image
                 used_imgs.append(imgs[a][i][0])     # get the filename of the image
     return training_set, validation_set, test_set
 
 
+# '''
+#     Get the entire training set.
+#    This is the old function from digits_tf
+# '''
+# def get_train(M):
+#     batch_xs = zeros((0, 28*28))
+#     batch_y_s = zeros( (0, num_labels))
+#     
+#     train_k =  ["train"+str(i) for i in range(num_labels)]
+#     for k in range(num_labels):
+#         batch_xs = vstack((batch_xs, ((array(M[train_k[k]])[:])/255.)  ))
+#         one_hot = zeros(num_labels)
+#         one_hot[k] = 1
+#         batch_y_s = vstack((batch_y_s,   tile(one_hot, (len(M[train_k[k]]), 1))   ))
+#     return batch_xs, batch_y_s
+
+#     
+# 
+# def get_test(M):
+#     batch_xs = zeros((0, 28*28))
+#     batch_y_s = zeros( (0, num_labels))
+#     
+#     test_k =  ["test"+str(i) for i in range(num_labels)]
+#     for k in range(num_labels):
+#         batch_xs = vstack((batch_xs, ((array(M[test_k[k]])[:])/255.)  ))
+#         one_hot = zeros(num_labels)
+#         one_hot[k] = 1
+#         batch_y_s = vstack((batch_y_s,   tile(one_hot, (len(M[test_k[k]]), 1))   ))
+#     return batch_xs, batch_y_s
+
+'''
+    Return the x, y-vectors of the training set.
+    Preprocess the images here by flattening and normalizing them.
+'''
+def preprocess(img_set):
+    batch_xs = zeros((0, 28*28))
+    batch_y_s = zeros( (0, num_labels))
+    
+    for a in ACTORS:
+        for img in img_set:
+            # normalize the image
+            preprocessed_img = (ndarray.flatten(img)-127)/255
+            one_hot = zeros(6)
+            one_hot[ACTORS.index(a)] = 1
+            
+            # append the img vector and its label to the X and Y vector
+            batch_xs = vstack((batch_xs, preprocessed_img)
+            batch_y_s = vstack((batch_y_s, one_hot)
+
+    return batch_xs, batch_y_s
+    
+    
+'''
+    for getting minibatch of size N from the training set
+    https://piazza.com/class/iu4xr8zpnvo7k0?cid=490
+'''
 def get_train_batch(M, N):
     
     n = int(N/num_labels)
     batch_xs = zeros((0, 28*28))
     batch_y_s = zeros( (0, num_labels))
     
-    train_k =  ["train"+str(i) for i in range(num_faces)]
+    train_k =  ["train"+str(i) for i in range(num_labels)]
 
     train_size = len(M[train_k[0]])
     #train_size = 5000
     
     for k in range(num_labels):
         train_size = len(M[train_k[k]])
+        
+        # generate random set of indices
         idx = array(random.permutation(train_size)[:n])
         batch_xs = vstack((batch_xs, ((array(M[train_k[k]])[idx])/255.)  ))
         one_hot = zeros(num_labels)
         one_hot[k] = 1
         batch_y_s = vstack((batch_y_s,   tile(one_hot, (n, 1))   ))
     return batch_xs, batch_y_s
-    
-
-def get_test(M):
-    batch_xs = zeros((0, 28*28))
-    batch_y_s = zeros( (0, num_faces))
-    
-    test_k =  ["test"+str(i) for i in range(num_faces)]
-    for k in range(num_faces):
-        batch_xs = vstack((batch_xs, ((array(M[test_k[k]])[:])/255.)  ))
-        one_hot = zeros(num_faces)
-        one_hot[k] = 1
-        batch_y_s = vstack((batch_y_s,   tile(one_hot, (len(M[test_k[k]]), 1))   ))
-    return batch_xs, batch_y_s
 
 
-def get_validation(M):
-    batch_xs = zeros((0, 28*28))
-    batch_y_s = zeros( (0, num_faces))
-    
-    validation_k =  ["validation"+str(i) for i in range(num_faces)]
-    for k in range(num_faces):
-        batch_xs = vstack((batch_xs, ((array(M[validation_k[k]])[:])/255.)  ))
-        one_hot = zeros(num_faces)
-        one_hot[k] = 1
-        batch_y_s = vstack((batch_y_s,   tile(one_hot, (len(M[validation_k[k]]), 1))   ))
-    return batch_xs, batch_y_s
-        
-
-def get_train(M):
-    batch_xs = zeros((0, 28*28))
-    batch_y_s = zeros( (0, num_faces))
-    
-    train_k =  ["train"+str(i) for i in range(num_faces)]
-    for k in range(num_faces):
-        batch_xs = vstack((batch_xs, ((array(M[train_k[k]])[:])/255.)  ))
-        one_hot = zeros(num_faces)
-        one_hot[k] = 1
-        batch_y_s = vstack((batch_y_s,   tile(one_hot, (len(M[train_k[k]]), 1))   ))
-    return batch_xs, batch_y_s
 ## PART 7 CODE
 '''
 Notes: 
@@ -165,26 +191,6 @@ Notes:
 ACTORS = ['Fran Drescher', 'America Ferrera', 'Kristin Chenoweth', 'Alec Baldwin', 'Bill Hader', 'Steve Carell']
 PICKLED_ACTORS = os.getcwd() + "/img_data/actor_imgs.p"  # lol ew
 
-'''
-    Preprocess the x vector of images.
-    For each image, grayscale, flatten and normalize.
-'''
-def preprocess_imgs(x):
-    # ## preprocess the images
-    # n = img.shape(1)[0]
-    # new_img = rgb2gray(img)                # grayscale
-    # new_img = (new_img - 127)/255          # normalize
-    num_imgs = np.shape(x)[0]
-    num_pixels = np.shape(x)[1]
-    
-    x_new = np.shape(x)
-    for i in range(num_imgs):
-        grayscaled = (grayscaled - 127)/255
-        np.append(x_new, grayscaled)
-        
-    return x_new
-
-
 
 # num_imgs = 6 * 100            # 100 imgs/actor, 6 actors present
 
@@ -204,8 +210,8 @@ img_size = 28*28
 W0 = tf.Variable(tf.random_normal([784, nhid], stddev=0.01))  # first layer
 b0 = tf.Variable(tf.random_normal([nhid], stddev=0.01))
 
-W1 = tf.Variable(tf.random_normal([nhid, num_faces], stddev=0.01))  # hidden layer
-b1 = tf.Variable(tf.random_normal([num_faces], stddev=0.01))
+W1 = tf.Variable(tf.random_normal([nhid, num_labels], stddev=0.01))  # hidden layer
+b1 = tf.Variable(tf.random_normal([num_labels], stddev=0.01))
 
 # layer outputs
 layer1 = tf.nn.tanh(tf.matmul(x, W0)+b0)   # hidden layer with tanh activations
@@ -213,7 +219,7 @@ layer2 = tf.matmul(layer1, W1)+b1          # output layer
 
 # get target labels with softmax function
 y = tf.nn.softmax(layer2)
-y_ = tf.placeholder(tf.float32, [None, num_faces])
+y_ = tf.placeholder(tf.float32, [None, num_labels])
 
 
 ## train the network with Adam
@@ -233,11 +239,12 @@ sess.run(init)
 
 correct_prediction = tf.equal(tf.argmax(y,1), tf.argmax(y_,1))
 accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
-test_x, test_y = get_test(M)
-test_x = preprocess_imgs(test_x)
 
-validation_x, validation_y = get_validation(M)
-validation_x = preprocess_imgs(validation_x)
+training_set, validation_set, test_set = get_img_sets()
+batch_xs, batch_ys = get_xy(training_set)
+preprocess_imgs = batch_xs
+test_x, test_y = preprocess(test_set)
+validation_x, validation_y = preprocess(validation_set)
 
 # store learning curve plot values
 x_vals = []
@@ -255,9 +262,6 @@ test_acc = []
 #for i in range(5000):
 for i in range(100):
   #print(i)  
-  batch_xs, batch_ys = get_train_batch(M, 500)
-  preprocess_imgs = batch_xs
-  
   
   sess.run(train_step, feed_dict={x: batch_xs, y_: batch_ys})
   
@@ -265,20 +269,23 @@ for i in range(100):
   if i % 1 == 0:
     # get values of tensor
     training_val = sess.run(accuracy, feed_dict={x: test_x, y_: test_y})
-    validation_val = sess.run(accuracy, feed_dict={validation_x, y_: test_y})
+    validation_val = sess.run(accuracy, feed_dict={validation_x, y_: validation_y})
     test_val = sess.run(accuracy, feed_dict={x: batch_xs, y_: batch_ys})
     
     # record NN performance across training, test and validation sets
-    # to graph later
+    # to graph later with the following variables per axis:
+    # x-axis: x_vals
+    # y_axis: train_acc, test_acc, val_acc
+    #
     x_vals.append(i)
-    lc_training_y.append(train_acc)
-    lc_test_y.append(test_acc)
+    training_acc.append(training_val)
+    validation_acc.append(validation_val)
+    test_acc.append(test_val)
     
     print("i=",i)
-    print("Test:", test_acc)
-    batch_xs, batch_ys = get_train(M)
+    print("Test:", test_val)
 
-    print("Train:", train_acc)
+    print("Train:", training_val)
     print("Penalty:", sess.run(decay_penalty))
     
 ## end TensorFlow session
@@ -299,13 +306,7 @@ plt.plot(x_vals, testing_acc, 'bo-')
 # save the graph in a png
 plt.savefig('p7_perf.png', bbox_inches='tight')
 
-
-
 def part9():
-    
-
-    
-    
     # visualize weights for first actor
     actor_1 = act[0]
     dest_file = os.getcwd() + '/images/actor_1_weights.png'

@@ -18,15 +18,17 @@ import urllib.request
 
 
 from PIL import Image
+from PIL import ImageFile              # tolerate truncated image files
+ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 '''
-    get images of actors in 
+    Get images of actors in 
  act =['Fran Drescher', 'America Ferrera', 'Kristin Chenoweth', 'Alec Baldwin', 'Bill Hader', 'Steve Carell']
-    and put in 28 x 28 cropped grayscale images in a folder:
+    and put in 28 x 28 cropped grayscale images, then pickle them.
+    The process takes about 30 minutes.
     
 
 '''
-
 #act = list(set([a.split('\t')[0] for a in open(input_file).readlines()]))
 act = ['Fran Drescher', 'America Ferrera', 'Kristin Chenoweth', 'Alec Baldwin', 'Bill Hader', 'Steve Carell']
 
@@ -105,8 +107,7 @@ for input_file in input_files:
     
                 
                 print(filename)
-                
-    ## ADDED CODE BELOW
+
                 bbox = [int(x) for x in line.split()[5].split(',')]
                 x1 = bbox[0]       # top-left corner
                 y1 = bbox[1]
@@ -161,8 +162,7 @@ for input_file in input_files:
                 # save the whole cropped images to the cropped_dir folder
                 toimage(cropped).save(cropped_dir + '/' + newFile)
                 
-                cropped_imgs[a].append(toimage(cropped))
-                    
+                cropped_imgs[a].append((filename, toimage(cropped)))
                 i += 1
 
 pf = open(img_data_dir + '/actor_imgs.p', 'wb')
@@ -171,6 +171,6 @@ pf.close()
 
 
 # to read
-# f = open(img_data_dir + '/actor_imgs.p', 'rb')
-# loaded_imgs = cPickle.load(f)
-# f.close()
+f = open(img_data_dir + '/actor_imgs.p', 'rb')
+loaded_imgs = cPickle.load(f)
+f.close()
