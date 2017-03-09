@@ -45,6 +45,7 @@ def rgb2gray(rgb):
 
     return gray/255.
 
+    
 def get_train_batch(M, N):
     
     n = int(N/num_labels)
@@ -130,13 +131,39 @@ Notes:
     - weight and bias initialization
 '''
 
+'''
+    Preprocess the x vector of images.
+    For each image, grayscale, flatten and normalize.
+'''
+def preprocess_imgs(x):
+    # ## preprocess the images
+    # n = img.shape(1)[0]
+    # new_img = rgb2gray(img)                # grayscale
+    # new_img = (new_img - 127)/255          # normalize
+    num_imgs = np.shape(x)[0]
+    num_pixels = np.shape(x)[1]
+    
+    x_new = np.shape(x)
+    for i in range(num_imgs):
+        grayscaled = rgb2gray(x[i])
+        grayscaled = flatten(grayscaled)
+        grayscaled = (grayscaled - 127)/255
+        np.append(x_new, grayscaled)
+        
+return x_new
+
 # num_imgs = 6 * 100            # 100 imgs/actor, 6 actors present
 
 # https://piazza.com/class/iu4xr8zpnvo7k0?cid=364
 # initialize weights and biases to some random number
 tf.random.seed(239782384)
 x = tf.placeholder(tf.float32, [None, 784])
-
+# 
+# snapshot = cPickle.load(open("snapshot50.pkl", 'rb'), encoding="latin1")
+# W0 = tf.Variable(snapshot["W0"])
+# b0 = tf.Variable(snapshot["b0"])
+# W1 = tf.Variable(snapshot["W1"])
+# b1 = tf.Variable(snapshot["b1"])
 
 nhid = 300
 W0 = tf.Variable(tf.random_normal([784, nhid], stddev=0.01))  # first layer
@@ -145,18 +172,12 @@ b0 = tf.Variable(tf.random_normal([nhid], stddev=0.01))
 W1 = tf.Variable(tf.random_normal([nhid, num_faces], stddev=0.01))  # hidden layer
 b1 = tf.Variable(tf.random_normal([num_faces], stddev=0.01))
 
-snapshot = cPickle.load(open("snapshot50.pkl", 'rb'), encoding="latin1")
-W0 = tf.Variable(snapshot["W0"])
-b0 = tf.Variable(snapshot["b0"])
-W1 = tf.Variable(snapshot["W1"])
-b1 = tf.Variable(snapshot["b1"])
-
-
+# layer outputs
 layer1 = tf.nn.tanh(tf.matmul(x, W0)+b0)   # hidden layer with tanh activations
 layer2 = tf.matmul(layer1, W1)+b1          # output layer
 
-
-y = tf.nn.softmax(layer2)                  # get softmax
+# get target labels with softmax function
+y = tf.nn.softmax(layer2)
 y_ = tf.placeholder(tf.float32, [None, num_faces])
 
 
@@ -178,7 +199,11 @@ sess.run(init)
 correct_prediction = tf.equal(tf.argmax(y,1), tf.argmax(y_,1))
 accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 test_x, test_y = get_test(M)
+test_x = preprocess_imgs(test_x)
+
 validation_x, validation_y = get_validation(M)
+validation_x = preprocess_imgs(validation_x)
+
 # store learning curve plot values
 x_vals = []
 training_acc = []
@@ -188,12 +213,17 @@ test_acc = []
 
 ## preprocess the images:load in img, grayscale, normalize and flatten it
 
+# notes on placeholder values:
+# http://learningtensorflow.com/lesson4/
 
-## train the NN multiple times
+## train the NN
 #for i in range(5000):
 for i in range(100):
   #print(i)  
   batch_xs, batch_ys = get_train_batch(M, 500)
+  preprocess_imgs = batch_xs
+  
+  
   sess.run(train_step, feed_dict={x: batch_xs, y_: batch_ys})
   
   # output info at each step
@@ -203,10 +233,11 @@ for i in range(100):
     validation_val = sess.run(accuracy, feed_dict={validation_x, y_: test_y})
     test_val = sess.run(accuracy, feed_dict={x: batch_xs, y_: batch_ys})
     
+    # record NN performance across training, test and validation sets
+    # to graph later
     x_vals.append(i)
     lc_training_y.append(train_acc)
     lc_test_y.append(test_acc)
-    
     
     print("i=",i)
     print("Test:", test_acc)
@@ -214,14 +245,6 @@ for i in range(100):
 
     print("Train:", train_acc)
     print("Penalty:", sess.run(decay_penalty))
-
-
-    snapshot = {}
-    snapshot["W0"] = sess.run(W0)
-    snapshot["W1"] = sess.run(W1)
-    snapshot["b0"] = sess.run(b0)
-    snapshot["b1"] = sess.run(b1)
-    cPickle.dump(snapshot,  open("new_snapshot"+str(i)+".pkl", "wb"))
     
 ## end TensorFlow session
 sess.close()
