@@ -30,22 +30,54 @@ import tensorflow as tf
 num_labels = 6
 act =['Fran Drescher', 'America Ferrera', 'Kristin Chenoweth', 'Alec Baldwin', 'Bill Hader', 'Steve Carell']
 
-# Provided course code from Guerzhoy's class site:
-# http://www.cs.toronto.edu/~guerzhoy/411/proj1/rgb2gray.py
-def rgb2gray(rgb):
-    '''Return the grayscale version of the RGB image rgb as a 2D numpy array
-    whose range is 0..1
-    Arguments:
-    rgb -- an RGB image, represented as a numpy array of size n x m x 3. The
-    range of the values is 0..255
-    '''
+SAVED_IMGS = os.getcwd() + '/img_data/tf/actor_imgs.p'
+def get_img_sets():
+    f = open(SAVED_IMGS, 'rb')
+    imgs = cPickle.load(f)
+    f.close()
+    training_set = {}
+    validation_set = {}
+    test_set = {}
     
-    r, g, b = rgb[:,:,0], rgb[:,:,1], rgb[:,:,2]
-    gray = 0.2989 * r + 0.5870 * g + 0.1140 * b
-
-    return gray/255.
-
+    # initialize dictionaries
+    for a in act:
+        training_set[a] = []
+        validation_set[a] = []
+        test_set[a] = []
     
+    used_imgs = []
+
+    ## build the training, validation and test sets. Ensure that all sets are 
+    ## unique.
+    # about 150 images per actor
+    # 30 training
+    # 120 remaining
+    # 30 validation
+    # 90 training
+    
+    # build the training set of 90 images
+    for a in act:
+        for i in range(90):
+            training_set[a].append(imgs[a][i][1])   # get the image
+            used_imgs.append(imgs[a][i][0])     # get the filename of the image
+    
+    # build the validation set of 30 images
+    for a in act:
+        for i in range(30):
+            if imgs[a][i][0] not in used_imgs:
+                validation_set[a].append(imgs[a][i][1])   # get the image
+                used_imgs.append(imgs[a][i][0])     # get the filename of the image
+    
+    
+    # build the test set with 30 validation sets per user
+    for a in act:
+        for i in range(30):
+            if imgs[a][i][0] not in used_imgs:
+                test_set[a].append(imgs[a][i][1])   # get the image
+                used_imgs.append(imgs[a][i][0])     # get the filename of the image
+    return training_set, validation_set, test_set
+
+
 def get_train_batch(M, N):
     
     n = int(N/num_labels)
@@ -104,8 +136,6 @@ def get_train(M):
         one_hot[k] = 1
         batch_y_s = vstack((batch_y_s,   tile(one_hot, (len(M[train_k[k]]), 1))   ))
     return batch_xs, batch_y_s
-        
-
 ## PART 7 CODE
 '''
 Notes: 
@@ -131,6 +161,10 @@ Notes:
     - weight and bias initialization
 '''
 
+
+ACTORS = ['Fran Drescher', 'America Ferrera', 'Kristin Chenoweth', 'Alec Baldwin', 'Bill Hader', 'Steve Carell']
+PICKLED_ACTORS = os.getcwd() + "/img_data/actor_imgs.p"  # lol ew
+
 '''
     Preprocess the x vector of images.
     For each image, grayscale, flatten and normalize.
@@ -145,12 +179,12 @@ def preprocess_imgs(x):
     
     x_new = np.shape(x)
     for i in range(num_imgs):
-        grayscaled = rgb2gray(x[i])
-        grayscaled = flatten(grayscaled)
         grayscaled = (grayscaled - 127)/255
         np.append(x_new, grayscaled)
         
-return x_new
+    return x_new
+
+
 
 # num_imgs = 6 * 100            # 100 imgs/actor, 6 actors present
 
@@ -166,6 +200,7 @@ x = tf.placeholder(tf.float32, [None, 784])
 # b1 = tf.Variable(snapshot["b1"])
 
 nhid = 300
+img_size = 28*28
 W0 = tf.Variable(tf.random_normal([784, nhid], stddev=0.01))  # first layer
 b0 = tf.Variable(tf.random_normal([nhid], stddev=0.01))
 
@@ -263,3 +298,25 @@ plt.plot(x_vals, testing_acc, 'bo-')
 
 # save the graph in a png
 plt.savefig('p7_perf.png', bbox_inches='tight')
+
+
+
+def part9():
+    
+
+    
+    
+    # visualize weights for first actor
+    actor_1 = act[0]
+    dest_file = os.getcwd() + '/images/actor_1_weights.png'
+    y1 = [1, 0, 0, 0, 0, 0]
+    W1 = get_w1(y1)
+    W1_img = toimage(np.reshape(W1, (32, 32), 'bilinear'))
+    W1_img.save('')
+    
+    # visualize weights for second actor
+    actor_2 = act[3]
+    dest_file = os.getcwd() + '/images/actor_2_weights.png'
+    y2 = [0, 0, 0, 1, 0, 0]
+    W1 = get_w1(y1)
+    W2_img = toimage(np.reshape(W1, (32, 32), 'bilinear'))
