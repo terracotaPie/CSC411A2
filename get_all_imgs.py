@@ -41,27 +41,14 @@ input_files = [img_data_dir + '/facescrub_actors.txt',\
 
 IMG_SIZE = (28, 28, 3)
 
-cropped_dir = img_data_dir + '/cropped2/'
-uncropped_dir = img_data_dir + '/uncropped2/'
+cropped_dir = img_data_dir + '/cropped/'
+uncropped_dir = img_data_dir + '/uncropped/'
 
 # create folders for script to work
 if not os.path.exists(uncropped_dir):
     os.makedirs(uncropped_dir)
 if not os.path.exists(cropped_dir):
     os.makedirs(cropped_dir)
-
-def rgb2gray(rgb):
-    '''Return the grayscale version of the RGB image rgb as a 2D numpy array
-    whose range is 0..1
-    Arguments:
-    rgb -- an RGB image, represented as a numpy array of size n x m x 3. The
-    range of the values is 0..255
-    '''
-    
-    r, g, b = rgb[:,:,0], rgb[:,:,1], rgb[:,:,2]
-    gray = 0.2989 * r + 0.5870 * g + 0.1140 * b
-
-    return gray/255.
     
 def timeout(func, args=(), kwargs={}, timeout_duration=1, default=None):
     '''From:
@@ -173,17 +160,17 @@ for input_file in input_files:
                 # save the whole cropped images to the cropped_dir folder
                 toimage(cropped).save(cropped_dir + '/' + newFile)
                 
-                cropped_imgs[a].append((filename, cropped))
+                cropped_imgs[a].append(cropped)
                 i += 1
                 
                 
 
-pf = open(img_data_dir + '/actor_imgs.p', 'wb')
+pf = open(img_data_dir + '/actor_imgs_NOFILENAME.p', 'wb')
 cPickle.dump(cropped_imgs, pf)
 pf.close()
 
 
 # to read
-f = open(img_data_dir + '/actor_imgs.p', 'rb')
+f = open(img_data_dir + '/actor_imgs_NOFILENAME.p', 'rb')
 loaded_imgs = cPickle.load(f)
 f.close()
