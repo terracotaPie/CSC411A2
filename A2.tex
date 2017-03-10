@@ -239,11 +239,34 @@ def deriv_multilayer(W0, b0, W1, b1, x, L0, L1, y, y_):
     return dCdW1, dCdb1, dCdW0, dCdb0
       \end{minted}
   \end{enumerate}
+
+To verify gradient correctness we used finite differences to compare our output.
+\begin{center}
+\begin{tabular}{ |c|c|c| } 
+ \hline
+ Method& approximation & gradient \\ 
+ \hline
+ W1 & 0.984191894531 & 0.984342670068 \\ 
+ W0 & 0.0 & -0.0 \\ 
+ b1 & 0.000476837158203 & 0.000534144113772 \\ 
+ b0 & 0.0 & 0.0 \\ 
+ \hline
+\end{tabular}
+\end{center}
 \end{homeworkProblem}
 %----------------------------------------------------------------------------------------
 %	PART 4 
 %----------------------------------------------------------------------------------------
 \begin{homeworkProblem}
+  We start by loading sample weights from the pickle file. Then train it using
+  mini-batch optimization to speed up training. Our training method works as follow:
+  \begin{enumerate}
+  \item First forward method - passes flattened image through the network
+    keeping all intermediate results
+  \item Then we compute the gradient with respect to $W0,b0,W1,b1$
+  \item We keep accumulating error values and then update our parameters
+    $W0,b0,W1,b1$ over a single batch and repeat
+  \end{enumerate}
   \begin{minted}[frame=lines, framesep=2mm, baselinestretch=1.2, linenos]{python}
 def train(plot=False):
     global W0, b0, W1, b1
@@ -286,8 +309,14 @@ def get_batch(offset,example_per_class=5):
                                                                      offset]
             y_batch[i * example_per_class + j][i] = 1
     return x_batch, y_batch, example_per_class * classes_num
-      \end{minted}
-  \includegraphics[]{images/performance.png}
+\end{minted}
+  \pagebreak
+  \begin{center}
+    visualizing weights:\\
+    \includegraphics[scale=0.4]{images/weights.png}\\
+    performance graph:\\
+    \includegraphics[scale=0.8]{images/performance.png}
+  \begin{center}
 \end{homeworkProblem}
 %----------------------------------------------------------------------------------------
 %	PART 5 
