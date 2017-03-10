@@ -48,7 +48,6 @@
 
 % Set up the header and footer
 \pagestyle{fancy}
-\lhead{\hmwkAuthorName} % Top left header
 \chead{\hmwkClass\ (\hmwkClassTime): \hmwkTitle} % Top center head
 %\rhead{\firstxmark} % Top right header
 \lfoot{\lastxmark} % Bottom left footer
@@ -148,9 +147,9 @@
 %	NAME AND CLASS SECTION
 %----------------------------------------------------------------------------------------
 
-\newcommand{\hmwkTitle}{Assignment\ \#$\sqrt{-1}$} % Assignment title
-\newcommand{\hmwkDueDate}{Friday,\ January\ 1,\ 2016} % Due date
-\newcommand{\hmwkClass}{CSC320} % Course/class
+\newcommand{\hmwkTitle}{Project\ \#2} % Assignment title
+\newcommand{\hmwkDueDate}{Friday,\ March\ 10,\ 2017} % Due date
+\newcommand{\hmwkClass}{CSC411} % Course/class
 \newcommand{\hmwkClassTime}{L0101} % Class/lecture time
 \newcommand{\hmwkAuthorName}{Firstname Lastname} % Your name
 
@@ -166,7 +165,8 @@
 \vspace{3in}
 }
 
-\author{\textbf{\hmwkAuthorName}}
+\author{\textbf{Fiona Leung} \textit{999766061}
+  \\ \textbf{Timur Borkhodoev} \textit{999376394}}
 %\date{} % Insert date here if you want it to appear below your name
 
 %----------------------------------------------------------------------------------------
@@ -297,13 +297,15 @@ def get_batch(offset,example_per_class=5):
   regressions. So our multinomial regression doesn't suffer from it. We start
   with generating a noise for our data set. 
   \begin{minted}[frame=lines, framesep=2mm, baselinestretch=1.2, linenos, mathescape,gobble=2]{python}
-# generate noise and $N(0, \sigma^2)$
-noise = scipy.stats.norm.rvs(scale=5,size=784*50*10)
-noise = noise.reshape(500,784)
-X,Y,n = get_batch(offset=0,examples=50)
-X += noise
+  # generate noise and $N(0, \sigma^2)$
+  noise = scipy.stats.norm.rvs(scale=5,size=784*50*10)
+  noise = noise.reshape(500,784)
+  X,Y,n = get_batch(offset=0,examples=50)
+  X += noise
   \end{minted}
-  After modifying our data set with noise - we get images that look like this: \\
+  After modifying our data set with noise - we get images that look like this
+  \\ 
+  
   \includegraphics[scale=0.5]{images/noise_image.png}
 \end{homeworkProblem}
 
