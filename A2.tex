@@ -309,16 +309,13 @@ def get_batch(offset,example_per_class=5):
   \includegraphics[scale=0.5]{images/noise_image.png}
 \end{homeworkProblem}
 
-\end{document}
-
-
 %----------------------------------------------------------------------------------------
 %	PART 7
 %----------------------------------------------------------------------------------------
 \begin{homeworkProblem}
 	
-	To construct the neural network, we trained on \emph{ENTER NUMBER HERE} 90?
-	images per actor. Each image was cropped to a bounding box that contained only the actor's face. Images were serialized in a dictionary that mapped the actors' names to an array list of their whole RGB images saved in a numpy array.$NOTE: DOUBLE CHECK THAT IT WAS A NUMPY ARRAY?$ 
+	To construct the neural network, we trained on 5400 images with 90
+	images per actor. Each image was cropped to a bounding box that was resized to a $60 \times 60$ array containing only the actor's face. Images were serialized in a dictionary that mapped the actors' names to an array list of their whole RGB images saved in a three-dimensional numpy array.
 	
 	\begin{verbatim}
 		actor_imgs = {
@@ -328,23 +325,24 @@ def get_batch(offset,example_per_class=5):
 	\end{verbatim}
 	
 	
-	This dictionary was read from a file called \texttt{actor_imgs.p} using the \texttt{pickle} module to create a unique training, validation and test set.
-	
+	This dictionary was read from a file called \texttt{actor\_imgs.p} using the \texttt{pickle} module to create a unique training, validation and test set.
+		
 	Each image passed through the neural network was preprocessed to standardize its values and characteristics so we could compare images on the same physical conditions as closely as possible.
 	
-	To preprocess the images we did the following to each:
+	
+	To preprocess each image we did the following:
 	\begin{itemize}
-		\item grayscaling the image to convert the RGB image to a 2D array \texttt{rgb2gray()} function given in class.
+		\item grayscale the image to convert the 3D RGB image to a 2D array \texttt{rgb2gray()} function given in class.
 		\item flattening the image array to a $1 \times 786$ vector stored in a NumPy array
 		\item normalize the image's pixels, their values are limited to values 0 to 1. This will allow us to compare images by standardizing the range of their pixel intensities
 	\end{itemize}
 	
-	
-	
-	
-	\bold{Neural Network Performance}
+	\emph{Neural Network Performance}
 	
 \end{homeworkProblem}
+\end{document}
+
+
 	
 	
 \end{document}
