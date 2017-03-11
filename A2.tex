@@ -29,7 +29,7 @@
 \usepackage{lastpage} % Required to determine the last page for the footer
 \usepackage{extramarks} % Required for headers and footers
 \usepackage{minted}
-\setminted{ frame=lines, framesep=2mm, baselinestretch=1.2, linenos,gobble=2 }
+etminted{ frame=lines, framesep=2mm, baselinestretch=1, linenos,autogobble }
 \usepackage[usenames,dvipsnames]{color} % Required for custom colors
 \usepackage{graphicx} % Required to insert images
 \usepackage{subcaption}
@@ -323,8 +323,7 @@ def get_batch(offset,example_per_class=5):
   So as discussed in lecture large errors are penalized quadratically in linear
 regressions. So our multinomial regression doesn't suffer from it. We start with
 generating a noise for our data set.
-  \begin{minted}[frame=lines, framesep=2mm, baselinestretch=1.2, linenos,
-mathescape,gobble=2]{python}
+  \begin{minted}{python}
   # generate noise and $N(0, \sigma^2)$
   noise = scipy.stats.norm.rvs(scale=5,size=784*50*10)
   noise = noise.reshape(500,784)
@@ -496,7 +495,7 @@ blah
 	
 	\emph{on 300 hidden units}
 	\begin{minted}{python}
-	iter = 5000
+	itr = 5000
 		Accuracy on:
 		    Training set 1.0
 		    Validation set: 0.85
