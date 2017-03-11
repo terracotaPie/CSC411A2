@@ -29,6 +29,7 @@
 \usepackage{lastpage} % Required to determine the last page for the footer
 \usepackage{extramarks} % Required for headers and footers
 \usepackage{minted}
+\setminted[frame=lines, framesep=2mm, baselinestretch=1.2, linenos,gobble=2]
 \usepackage[usenames,dvipsnames]{color} % Required for custom colors
 \usepackage{graphicx} % Required to insert images
 \usepackage{subcaption}
@@ -452,16 +453,14 @@ descent.
 	 more accurate value closest to reproducing a clearer image of what each actor would look like.
 	
 	The training set of course, would perform best across the other 3 image sets since the NN
-	was trained on that image set unlike the validation and training sets.
-
-	
-	\begin{figure}[ht!]
-\centering
-    \includegraphics[width=\textwidth]{images/part7_results.png}
-	\caption{NN Network Performance}\label{fig:NN Classifier Performance}
+	was trained on that image set unlike the validation and training sets.\autoref{fig:performanceNN}\\
+	\begin{figure}[ht]
+    \centering
+    \includegraphics[scale=0.6]{images/part7_results.png}
+    \caption{NN Network Performance}\label{fig:performanceNN}
 	\end{figure}
-	
 \end{homeworkProblem}
+\clearpage
 
 
 %----------------------------------------------------------------------------------------
@@ -487,7 +486,6 @@ blah
 	 then displayed them. These results are automatically saved to image files named
 	  \texttt{images/part9\_*.jpg}
 	
-
 	\vspace{10mm}
 	\textbf{Hidden Unit Selection}
 	To pick the best number of hidden units, we selected one based on its performance.
@@ -497,14 +495,14 @@ blah
 	\textbf{Results}
 	
 	\emph{on 300 hidden units}
-	\begin{minted}
+	\begin{minted}{python}
 	iter = 5000
 		Accuracy on:
 		    Training set 1.0
 		    Validation set: 0.85
 		    Test set: 0.838889
 		On 600 hidden units --
-	\end{minted}
+  \end{minted}\\
 	
 	\textbf{Weight Visualization}
 
@@ -536,15 +534,13 @@ blah
 	\vspace{10mm}
 	\emph{On 600 hidden units}
 	
-	\begin{verbatim}
+	\begin{minted}{python}
 	itr = 5000
 	Accuracy on:
 	    Training set 1.0
 	    Validation set: 0.838889
 	    Test set: 0.833333
-	\end{verbatim}
-	
-	
+	\end{minted}
 	\emph{Code}
 	
 \end{homeworkProblem}
@@ -568,16 +564,16 @@ over 500 iterations then test its performance accuracy at detecting the correct
 actor on the training, validation and training set. It's performance at each
 iteration is outputted when this function is run.
 
-The NN performed signficantly better aat classifying actors on the training set
+The NN performed signficantly better at classifying actors on the training set
 it was trained on versus the validation and training set.
 
-\begin{verbatim}
+\begin{minted}{python}
 itr = 500
 	Accuracy on:
 	    Training set 0.977778
 	    Validation set: 0.772222
 	    Test set: 0.766667
-\end{verbatim}
+\end{minted}
 
 \textbf{System architecture}
 
