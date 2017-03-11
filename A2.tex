@@ -182,15 +182,13 @@
 \begin{homeworkProblem}
 \noindent \textit{Dataset description}
   The dataset contained an even number of images per digit, having no more or
-  less information the neural networks coud train off of determine one digit
-  better apart from another. Each digit had multiple images of it where it was
-  drawn with varying writing styles. Some digits were written with more loops
-  and imperfections than others, had different thicknesses or were drawn slanted
-  at different angles.Some digit images had discontinuous lines in the number
-  shapes.
-
-  For example, in the images of the 0's some had a closed loop while others were
-  perfect and had a small edge that jutted out near its top.
+less information the neural networks coud train off of determine one digit
+better apart from another. Each digit had multiple images of it where it was
+drawn with varying writing styles. Some digits were written with more loops and
+imperfections than others, had different thicknesses or were drawn slanted at
+different angles.Some digit images had discontinuous lines in the number shapes.
+For example, in the images of the 0's some had a closed loop while others were
+perfect and had a small edge that jutted out near its top.
 \begin{enumerate}
   \item variety of angles
   \item different styles of handwriting
@@ -228,15 +226,14 @@ def cross_entropy(y, y_):
   \begin{minted}[frame=lines, framesep=2mm, baselinestretch=1.2, linenos]{python}
 def deriv_multilayer(W0, b0, W1, b1, x, L0, L1, y, y_):
     dCdL1 = y - y_
-    dCdW1 = dot(L0, dCdL1.T)
     dCdobydodh = dot(W1, dCdL1)
+    dCdW1 = dot(L0, dCdL1.T)
     diff = 1 - L0**2
 
     dCdW0 = tile(dCdobydodh, 28 * 28).T * dot(x, (diff.T))
-    dCdb1 = dCdL1
     dCdb0 = dCdobydodh * diff
 
-    return dCdW1, dCdb1, dCdW0, dCdb0
+    return dCdW1, dCdL1, dCdW0, dCdb0
       \end{minted}
   \end{enumerate}
 
@@ -334,8 +331,17 @@ def get_batch(offset,example_per_class=5):
   \end{minted}
   After modifying our data set with noise - we get images that look like this
   \\ 
-  
   \includegraphics[scale=0.5]{images/noise_image.png}
+  \begin{center}
+    The performance difference is drastic\\
+    \begin{tabular}{ |c|c|c| } 
+    \hline
+    Linear & Multinomial \\ 
+    \hline
+    43.54 & 82.92 \\ 
+    \hline
+    \end{tabular}
+  \end{center}
 \end{homeworkProblem}
 
 %----------------------------------------------------------------------------------------
