@@ -362,9 +362,16 @@ def get_batch(offset,example_per_class=5):
 	\end{verbatim}
 	
 	
-	This dictionary was read from a file called \texttt{actor\_imgs.p} using the \texttt{pickle} module to create a unique training, validation and test set.
+	This dictionary was read from a file called \texttt{actor\_imgs.p} using the \texttt{pickle}
+	 module. To create a unique training, validation or test set, we shuffled the images to select
+	 for these sets each time. By not hardcoding what images to use in the image set and shuffling, 
+	 we could preventing the NN from detecting the images that appeared the most in these sets, removing
+	 biases.
 	
 		Images were downloaded and serialized with the \texttt{get\_all\_imgs.py} script.
+		\textbf{Note} that the images are RGB NumPy arrays resized to
+		 $60 \times 60 \times 3$ matrices then serialized here to make \texttt{faces.py} run faster.
+		 
 	The single \texttt{cPickle} file created is under \texttt{img\_data\/tf\/actor\_imgs.p}.
 	
 	\texttt{faces.py} will open \texttt{actor\_imgs.p} and filter out a hardcoded list of unusable images that are not of an actor's face or too blurry.
@@ -385,7 +392,7 @@ def get_batch(offset,example_per_class=5):
 	
 		
 	\vspace{7mm}
-	\emph{Input Preprocessing}
+	\textbf{Input Preprocessing}
 	
 	Each image passed through the neural network was preprocessed to standardize its values and characteristics so we could compare images on the same physical conditions as closely as possible.
 	
@@ -397,19 +404,29 @@ def get_batch(offset,example_per_class=5):
 	\end{itemize}
 
 	\vspace{7mm}
-	\emph{Weight Initialization}
+	\textbf{Weight Initialization}
 	
 	The weights were initialized to some random x and y value on a normal distribution with a standard deviation of 0.1. The function \texttt{tf.random.normal()} was used to generate these values.
 	\vspace{7mm}
 	
-	\emph{Activation Function}
+	\textbf{Activation Function}
 	
 	Tanh activations were used in the hidden layer. The outputs of the tanh activations have a smaller chance of becoming a dead neuron during gradient descent.
 	%%NOTE: TIM NEED HELP EXPLAINING THIS BETTER ER NAH? PLS REWRITE THE TANH PART%	
 
 	\vspace{10mm}
 		
-	\emph{Results}
+	\textbf{Results}
+
+	The neural network(NN) completed with the following results:
+	\begin{verbatim}
+	itr = 5000
+	Accuracy on:
+	    Training set 0.922222
+	    Validation set: 0.822222
+	    Test set: 0.85
+	\end{verbatim}
+	
 	The more iterations of gradient descent there were, the better the classfier's performance was
 	 on detecting the correct actor in an image since it could readjust it's weights to a much 
 	 more accurate value closest to reproducing a clearer image of what each actor would look like.
@@ -432,6 +449,7 @@ def get_batch(offset,example_per_class=5):
 %	PART 8
 %----------------------------------------------------------------------------------------
 \begin{homeworkProblem}
+blah
 \end{homeworkProblem}
 
 
@@ -441,8 +459,149 @@ def get_batch(offset,example_per_class=5):
 %----------------------------------------------------------------------------------------
 \begin{homeworkProblem}
 
+	To generate the two sets of weights \texttt{W0 and W1}, we trained the NN on the
+	 same image set used in part 7 to adjust the weights and then return them in 
+	 \texttt{part9()} of \texttt{faces.py}.
+	
+	We created the function \texttt{visualize_weights()} to take in these weights, 
+	reshape them into the $60 \times 60$ pixel image, the size of the images the NN was trained on,,
+	 then displayed them. These results are automatically saved to image files named
+	  \texttt{images/part9_*.jpg}
+	
+	\textbf{Weight Visualization}
 
+	\begin{figure}[ht!]
+	\centering
+	\begin{subfigure}[b]{0.3\textwidth}
+	    \includegraphics[width=\textwidth]{images/part9_.jpg}
+	    \caption{Alec Baldwin}
+	    \label{fig:face1}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.3\textwidth}
+	    \includegraphics[width=\textwidth]{images/part9_.jpg}
+	    \caption{Chenoweth}
+	    \label{fig:face2}
+	\end{subfigure}
+	\end{figure}
+	
+	\vspace{10mm}
+	\textbf{Hidden Unit Selection}
+	To pick the best number of hidden units, we selected one based on its performance.
+	
+	We tested the NN on 300, 600 and 900 units, visualizing the weights at each step.
+	\vspace{7mm}
+	\textbf{Results}
+	
+	\emph{on 300 hidden units}
+	\begin{verbatim}
+	itr = 5000
+		Accuracy on:
+		    Training set 1.0
+		    Validation set: 0.85
+		    Test set: 0.838889
+		On 600 hidden units --
+	\end{verbatim}
+	
+	\begin{figure}[ht!]
+	\centering
+	\begin{subfigure}[b]{0.3\textwidth}
+	    \includegraphics[width=\textwidth]{images/part9_results_50_nh300.png}
+	    \caption{Visualize weights with 50 units out of 300 hidden units}
+	    \label{fig:face1}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.3\textwidth}
+	    \includegraphics[width=\textwidth]{images/part9_results_100_nh300.png}
+	    \caption{Visualize weights with 100 units out of 300 hidden units}
+	    \label{fig:face1}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.3\textwidth}
+	    \includegraphics[width=\textwidth]{images/part9_results_200_nh300.png}
+	    \caption{Visualize weights with 200 units out of 300 hidden units}
+	    \label{fig:face1}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.3\textwidth}
+	    \includegraphics[width=\textwidth]{images/part9_results_299_nh300.png}
+	    \caption{Visualize weights with 300 units out of 300 hidden units}
+	    \label{fig:face1}
+	\end{subfigure}
+	\end{figure}	
+	
+	\vspace{10mm}
+	\emph{On 600 hidden units}
+	
+	\begin{verbatim}
+	itr = 5000
+	Accuracy on:
+	    Training set 1.0
+	    Validation set: 0.838889
+	    Test set: 0.833333
+	\end{verbatim}
+	
+	
+	\emph{Code}
+	
+\end{homeworkProblem}
+
+%
+
+
+%----------------------------------------------------------------------------------------
+%	PART 10
+%----------------------------------------------------------------------------------------
+\begin{homeworkProblem}
+
+
+We extracted the conv4 activations after we trained AlexNet on our set of of actor images in 
+\texttt{get_conv_activations()}, using 5400 images(150 images per actor) deserialized from a pickle 
+file \texttt{/img_data/alexnet/actor_imgs_with_filenames.p}.
+
+Then we fed these activations into our NN in \texttt{part10()} which would train over 500 iterations then test its performance accuracy at detecting the correct actor on the training, validation and training set. It's performance at each iteration is outputted when this function is run.
+
+The NN performed signficantly better aat classifying actors on the training 
+set it was trained on versus the validation and training set.
+
+\begin{verbatim}
+itr = 500
+	Accuracy on:
+	    Training set 0.977778
+	    Validation set: 0.772222
+	    Test set: 0.766667
+\end{verbatim}
+
+\textbf{System architecture}
+
+\textbf{Activation Extraction}
+
+We extracted the conv4 activations that were made in AlexNet after we trained it on
+a set of $227 \times 227 \times 3$ RGB images of the actors in the function 
+\texttt{get_conv4_activations()} from \texttt{deepfaces.py}. The images
+were deserialized from a pickled image file described below.
+
+\textbf{Training}
+
+We used about 150 images per actor, so 5400 images in total to train AlexNet.
+The images were gathered from \texttt{get_all_imgs.py}, this time setting
+\texttt{IMG_SHAPE} to \texttt{227, 227, 3} to match the image shapes already coded in the
+given AlexNet code from \url{http://www.cs.toronto.edu/~guerzhoy/tf_alexnet/myalexnet_forward_newtf.py}.
+
+The image pickle file was created in the same format desribed in \textbf{Part 7} under \texttt{img_data/alexnet/actor_imgs_with_filename.p} using the \texttt{get_all_imgs.py} script.
+
+When this pickle file was deserialized it was preprocessed to remove any images that did not contain
+a distinguishable face, and was a 3D RGB image. The images selected in the training set were
+shuffled each time to randomize the training set and eliminate bias for faces that could
+reappear in the image set a fixed number of times.
+
+\textbf{Weight initialization}
+
+Weights were initialized using the weights file given on the class site, \texttt{bvlc_alexnet.npy}
+
+\textbf{Note} that this file was too large to upload and include in our submission. It
+ must be downloaded and put in the same root folder as \texttt{deepfaces.py} to run it.
+ 
+\texttt{bvlc_alexnet.npy} can be downloaded from here:
+\url{http://www.cs.toronto.edu/~guerzhoy/tf_alexnet/bvlc_alexnet.npy}
+
+Then, we fed the activations from \texttt{get_conv4_activations()} into \texttt{part10.py}
 
 \end{homeworkProblem}
 \end{document}
-
