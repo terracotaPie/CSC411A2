@@ -1,9 +1,9 @@
 
 # coding: utf-8
 
-# In[3]:
+# In[1]:
 
-#get_ipython().magic('matplotlib inline')
+# get_ipython().magic('matplotlib inline')
 from pylab import *
 import numpy as np
 import matplotlib.pyplot as plt
@@ -15,6 +15,7 @@ import matplotlib.image as mpimg
 from scipy.ndimage import filters
 import urllib
 from numpy import random
+import scipy.stats
 
 import pickle as cPickle
 
@@ -62,42 +63,13 @@ def deriv_multilayer(W0, b0, W1, b1, x, L0, L1, y, y_):
     return dCdW1, dCdb1, dCdW0, dCdb0
 
 
-# ## Part 1 - Dataset Description
-#   * variety of angles
-#   * different styles of handwriting
-#   * gaps between continuous lines
-#   * different thickness levels
-
-# In[32]:
-
-f, sub = plt.subplots(10, 10, figsize=(15, 15))
-for i in range(10):
-    for j in range(10):
-        sub[i][j].axis('off')
-        sub[i][j].imshow(
-            M['train' + str(i)][j + 20].reshape((28, 28)), cmap=cm.gray)
-
-plt.savefig("images/dataset.png")
-
-
-# ## Part 2 Compute network function
-
-# In[5]:
-
-def compute_network(x, W0, b0, W1, b1):
-    _,_, output = forward(x, W0, b0, W1, b1)
-    return argmax(output)
-
-
-# ## Part 3 Cost function
-
-# In[6]:
+# In[2]:
 
 def cross_entropy(y, y_):
     return -sum(y_ * log(y))
 
 
-# In[7]:
+# In[3]:
 
 #Load sample weights for the multilayer neural network
 def load_sample_weights():
@@ -124,7 +96,7 @@ def load_sample_weights():
 ################################################################################
 
 
-# In[8]:
+# In[4]:
 
 def get_batch(offset,example_per_class=5):
     # 5 examples per class
@@ -139,14 +111,14 @@ def get_batch(offset,example_per_class=5):
     return x_batch, y_batch, example_per_class * classes_num
 
 
-# In[9]:
+# In[5]:
 
 #Load one example from the training set, and run it through the
 def test_image(x):
     _,_, output = forward(x, W0, b0, W1, b1)
     return argmax(output)
 
-def test_perf():
+def test_performance_mult():
     hit = miss = 0
     for i in range(10):
         for image in M["test" + str(i)]:
@@ -158,17 +130,25 @@ def test_perf():
     return (float(hit)/float(hit + miss) * 100)
 
 
-# In[10]:
+# In[6]:
 
-# Do gradient descent
+noise = scipy.stats.norm.rvs(scale=5,size=784*50*10)
+noise = noise.reshape(500,784)
+print(noise)
+
+
+# In[7]:
+
+# Do gradient Descent
 def train(plot=False):
     global W0, b0, W1, b1
-    global plot_iters, plot_performance
     plot_iters = []
     plot_performance = []
     alpha = 1e-3
-    for i in range(150):
-        X, Y, examples_n = get_batch(i * 5,10)
+    X, Y, examples_n = get_batch(0,50)
+    X += noise
+    for i in range(30):
+#         X, Y, examples_n = get_batch(i * 5,20)
 
         update = np.zeros(4)
 
@@ -180,8 +160,9 @@ def train(plot=False):
             update = [update[k] + gradients[k] for k in range(len(gradients))]
             if (i * examples_n + j) % 500 == 0: 
                 print("Iter %d" % (i * examples_n + j))
-
+            
         # update the weights 
+#         print("Updating over batch %s" % update)
         W1 -= alpha * update[0]
         b1 -= alpha * update[1]
         W0 -= alpha * update[2]
@@ -190,97 +171,70 @@ def train(plot=False):
             plot_iters.append(i * examples_n)
             plot_performance.append(test_perf())
     return plot_iters,plot_performance
-
-
-# In[33]:
-
-plot_iters = []
-plot_performance = []
 W0,b0,W1,b1 = load_sample_weights()
-train(plot=False)
-test_perf()
+train()
 
 
-# In[35]:
+# In[8]:
 
-f, sub = plt.subplots(10,10, figsize=(15, 15))
-for i in range(10):
-    for j in range(10):
-        sub[i][j].axis('off')
-        sub[i][j].imshow(W0.T[i * 10 + j].reshape((28,28)))
+def grad_descent(f, df, x, y, init_t, alpha):
+    EPS = 1e-5
+    prev_t = init_t-10*EPS
+    t = init_t.copy()
+    max_iter = 10000
+    iter  = 0
+    while iter < max_iter:
+        prev_t = t.copy()
+        t -= alpha*df(x, y, t)
+        if iter % 500 == 0:
+            print("Iter %d" % iter)
+        iter += 1
+    return t
 
-plt.savefig("images/weights.png")
-
-
-# In[13]:
-
-W0,b0,W1,b1 = load_sample_weights()
-plot_iters,plot_performance = train(plot=True)
-print(plot_iters)
-print(plot_performance)
-
-plt.figure()
-plt.plot(plot_iters,plot_performance)
-plt.ylabel('performance')
-plt.xlabel('iterations')
-plt.savefig("images/performance.png")
-
-
-# In[ ]:
-
-def check_grad(x, y_, epsilon, w1_indices, w0_indices, b0_index, b1_index, W0,
-               b0, W1, b1):
-    L0, L1, y = forward(x, W0, b0, W1, b1)
-    f_x = cross_entropy(y, y_)
-
-    grads = deriv_multilayer(W0, b0, W1, b1, x, L0, L1, y, y_)
-
-    W1[w1_indices[0]][w1_indices[1]] += epsilon
-    copy_L0, copy_L1, copy_out = forward(x, W0, b0, W1, b1)
-    f_x_h = cross_entropy(copy_out, y_)
-
-    fin_differences = (f_x_h - f_x) / epsilon
-    print("Estimates W1 with finite differences")
-    print(fin_differences)
-    print("Computed W1:")
-    print(grads[0][w1_indices[0]][w1_indices[1]])
-
-    W0, b0, W1, b1 = load_sample_weights()
-    W0[w0_indices[0]][w0_indices[1]] += epsilon
-    copy_L0, copy_L1, copy_out = forward(x, W0, b0, W1, b1)
-    f_x_h = cross_entropy(copy_out, y_)
-
-    fin_differences = (f_x_h - f_x) / epsilon
-    print("Estimates W0 with finite differences")
-    print(fin_differences)
-    print("Computed W0:")
-    print(grads[2][w0_indices[0]][w0_indices[1]])
+def test_performance_linear(theta):
+    hit = miss = 0
+    for i in range(10):
+        for image in M["test" + str(i)]:
+            result = np.dot(np.append(ones(1),image/255.),theta.T)
+            if result.argmax() == i:
+                hit+=1
+            else:
+                miss+=1
+    return (float(hit)/float(hit + miss)) * 100
 
 
-    W0, b0, W1, b1 = load_sample_weights()
-    b1[b1_index] += epsilon
-    copy_L0, copy_L1, copy_out = forward(x, W0, b0, W1, b1)
-    f_x_h = cross_entropy(copy_out, y_)
+# In[9]:
 
-    fin_differences = (f_x_h - f_x) / epsilon
-    print("Estimates b1 with finite differences")
-    print(fin_differences)
-    print("Computed b1:")
-    print(grads[1][b1_index][0])
+def f(x, y, theta):
+    x = hstack((ones((x.shape[0],1)), x))
+    return sum(sum((y - dot(x,theta.T)) *7* 2))
 
-    W0, b0, W1, b1 = load_sample_weights()
-    b0[b0_index] += epsilon
-    copy_L0, copy_L1, copy_out = forward(x, W0, b0, W1, b1)
-    f_x_h = cross_entropy(copy_out, y_)
 
-    fin_differences = (f_x_h - f_x)/epsilon
-    print("Estimates b0 with finite differences")
-    print(fin_differences)
-    print("Computed b0:")
-    print(grads[3][b0_index][0])
+def df(x, y, theta):
+    x = hstack( (ones((x.shape[0],1)), x))
+    return 2 * dot((dot(x,theta.T) - y).T,x)
 
-W0, b0, W1, b1 = load_sample_weights()
-example = M["train2"][0:1].T
-true = array([[0, 0, 0, 0, 0, 1, 0, 0, 0, 0]]).T
-check_grad(example, true, 0.001, [10,5], [200,10], 5, 7,W0, b0, W1, b1)
+X,Y,n = get_batch(0,50)
+X = X/255. + noise 
+theta0 = np.zeros(10 * 785)
+theta0 = theta0.reshape(10,785)
+theta = grad_descent(f, df, X, Y, theta0, 1e-7)
+test_performance_linear(theta)
 
+
+# In[10]:
+
+result_lin = test_performance_linear(theta)
+result_mult = test_performance_mult()
+print("Linear performance      | %.2f" % result_lin)
+print("Multinomial performance | %.2f" % result_mult)
+
+
+# In[17]:
+
+# visualize noisy image
+X,Y,n = get_batch(0,50)
+X += noise
+noisy_image = X[0].reshape((28,28))
+output = plt.imshow(noisy_image)
+plt.savefig("images/noise_image.png")
