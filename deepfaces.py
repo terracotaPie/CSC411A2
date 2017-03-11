@@ -20,8 +20,8 @@ from caffe_classes import class_names
 # display images in grayscale
 gray()
 
-RESULTS_FOLDER = '/home/zerochill/CSC411A2/images'
-SAVED_IMGS = '/home/zerochill/CSC411A2/img_data/alexnet/actor_imgs_ALEXNET.p'
+RESULTS_FOLDER = os.getcwd() + '/images'
+SAVED_IMGS = os.getcwd() + '/img_data/alexnet/actor_imgs_ALEXNET.p'
 ACTORS = ['Fran Drescher', 'America Ferrera', 'Kristin Chenoweth', 'Alec Baldwin', 'Bill Hader', 'Steve Carell']
 
 
@@ -33,17 +33,16 @@ def conv(input, kernel, biases, k_h, k_w, c_o, s_h, s_w,  padding="VALID", group
     assert c_i%group==0
     assert c_o%group==0
     convolve = lambda i, k: tf.nn.conv2d(i, k, [1, s_h, s_w, 1], padding=padding)
-
-
+    
+    
     if group==1:
         conv = convolve(input, kernel)
     else:
         input_groups =  tf.split(input, group, 3)   #tf.split(3, group, input)
-        kernel_groups = tf.split(kernel, group, 3)  #tf.split(3, group, kernel)
+        kernel_groups = tf.split(kernel, group, 3)  #tf.split(3, group, kernel) 
         output_groups = [convolve(i, k) for i,k in zip(input_groups, kernel_groups)]
         conv = tf.concat(output_groups, 3)          #tf.concat(3, output_groups)
     return  tf.reshape(tf.nn.bias_add(conv, biases), [-1]+conv.get_shape().as_list()[1:])
-
 
 
 
@@ -53,7 +52,7 @@ def conv(input, kernel, biases, k_h, k_w, c_o, s_h, s_w,  padding="VALID", group
 '''
 def get_xy_vectors(actor_to_imgs, i, n, k):
     batch_xs = zeros((0, n))
-    batch_y_s = zeros((0, 6))
+    batch_y_s = zeros((0, k))
 
     for actor in ACTORS:
         # add the i'th actor
@@ -95,7 +94,8 @@ def preprocess(raw_actor_to_imgs):
     for actor in raw_actor_to_imgs:
         img_list = []
         for img in raw_actor_to_imgs[actor]:
-            # 3D image found
+
+            # 3D image found keep this in the list of images
             if img.ndim == 3:
                 img_list.append(img.T)
 
@@ -125,10 +125,12 @@ def preprocess(raw_actor_to_imgs):
         actor_to_imgs2[actor] = [training_set, validation_set, test_set]
 
     return actor_to_imgs2
-    
-    
-    
-# based off myalexnet.py
+
+
+
+'''
+    Get the conv4 activations of AlexNet after training it on the 6 actors' images.
+'''
 def get_alexnet_conv4(actor_to_imgs):
     train_x = zeros((1, 227,227,3)).astype(float32)
     train_y = zeros((1, 1000))
@@ -136,9 +138,10 @@ def get_alexnet_conv4(actor_to_imgs):
     ydim = train_y.shape[1]
     x_rand = (random.random((1,) + xdim)/255.).astype(float32)
     img = x_rand.copy()
-    
+
+    # load in weights
     net_data = load(open("bvlc_alexnet.npy", "rb"), encoding='latin1').item()
-    #x = tf.placeholder(tf.float32, (None,) + xdim)
+    
     x = tf.placeholder(tf.float32, [1, 227, 227, 3])
     #conv1
     #conv(11, 11, 96, 4, 4, padding='VALID', name='conv1')
@@ -205,38 +208,46 @@ def get_alexnet_conv4(actor_to_imgs):
     init = tf.global_variables_initializer()
     sess = tf.Session()
     sess.run(init)
-    
+
     # get conv4 activations per actor
     actor_to_imgs2 = {}
     for actor in actor_to_imgs:
-        
+
         print("Processing conv4 activations for: ", actor)
-        
+
         img_list = []
         for img0 in actor_to_imgs[actor]:
-            
+
             img[0,:,:,:] = (img0.T[:,:,:3]).astype(float32)
             img = img - mean(img)
-            
+
             # save the conv4 activation
             conv4_output = sess.run(conv4, feed_dict={x:img})
-            
+
             # flatten and cast to numpy array
             processed = array(conv4_output).flatten()
             img_list.append(processed)
-            
+
         actor_to_imgs2[actor] = img_list
-        
+
     sess.close()
-    
-    
+
+
     return actor_to_imgs2
 
 
 
+'''
+    Pass the conv4 activations to feed into a NN of 300 hidden units and train it
+    to classify an image for any actor in ACTORS.
+
+    ACTORS = ['Fran Drescher', 'America Ferrera', 'Kristin Chenoweth', \
+             'Alec Baldwin', 'Bill Hader', 'Steve Carell']
+'''
 def part10(train_images, train_labels, val_images, val_labels, test_images, test_labels):
 
-    tf.set_random_seed(90267892)
+    tf.set_random_seed(52635486)
+
     x = tf.placeholder(tf.float32, [None, 64896])
 
     nhid = 300
@@ -273,23 +284,23 @@ def part10(train_images, train_labels, val_images, val_labels, test_images, test
     test_acc = []
     validation_acc = []
     train_acc = []
-    for i in range(501):      
+    for i in range(501):
         batch_xs, batch_ys = get_train_batch(train_images, train_labels, 50, len(train_images))
         sess.run(train_step, feed_dict={x: batch_xs, y_: batch_ys})
-        
+
         # print progress every 50 iterations
         if i % 50 == 0:
             print('\nitr = {:d}'.format(i))
-        
+
             train_results = sess.run(accuracy, feed_dict={x: train_images, y_: train_labels})
             validation_results = sess.run(accuracy, feed_dict={x: val_images, y_: val_labels})
             test_results = sess.run(accuracy, feed_dict={x: test_images, y_: test_labels})
-        
+
             print("Accuracy on:")
             print('    Training set', train_results)
             print('    Validation set:', validation_results)
             print('    Test set:', test_results)
-    
+
             # record NN performance
             x_vals.append(i)
             train_acc.append(train_results)
@@ -308,14 +319,14 @@ def part10(train_images, train_labels, val_images, val_labels, test_images, test
     plt.title('NN with AlexNet Conv4 Activations: Learning Curve across Image Sets')
     plt.xlabel('Number of iterations of training')
     plt.ylabel('Classification Accuracy(%)')
-    
+
     plt.plot(x_vals, train_acc)
     plt.plot(x_vals, validation_acc)
     plt.plot(x_vals, test_acc)
     plt.legend(['Training Set', 'Validation Set', 'Test Set'], loc='lower right')
 
     savefig(RESULTS_FOLDER + '/part10_perf.png')
-    
+
     return W0_final, W1_final, b0_final, b1_final
 
 
@@ -334,4 +345,4 @@ if __name__ == '__main__':
     validation_imgs, validation_labels = get_xy_vectors(actor_to_imgs, 1, 64896, num_labels)
     test_imgs, test_labels = get_xy_vectors(actor_to_imgs, 2, 64896, num_labels)
 
-    W0_final, W1_final, b0_final, b1_final = part10(training_imgs, training_labels, validation_imgs, validation_labels, test_imgs, test_labels)
+    W0, W1, b0, b1 = part10(training_imgs, training_labels, validation_imgs, validation_labels, test_imgs, test_labels)
