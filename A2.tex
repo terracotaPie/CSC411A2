@@ -482,27 +482,12 @@ blah
 	 same image set used in part 7 to adjust the weights and then return them in 
 	 \texttt{part9()} of \texttt{faces.py}.
 	
-	We created the function \texttt{visualize_weights()} to take in these weights, 
+	We created the function \texttt{visualize\_weights()} to take in these weights, 
 	reshape them into the $60 \times 60$ pixel image, the size of the images the NN was trained on,,
 	 then displayed them. These results are automatically saved to image files named
-	  \texttt{images/part9_*.jpg}
+	  \texttt{images/part9\_*.jpg}
 	
-	\textbf{Weight Visualization}
 
-	\begin{figure}[ht!]
-	\centering
-	\begin{subfigure}[b]{0.3\textwidth}
-	    \includegraphics[width=\textwidth]{images/part9_.jpg}
-	    \caption{Alec Baldwin}
-	    \label{fig:face1}
-	\end{subfigure}
-	\begin{subfigure}[b]{0.3\textwidth}
-	    \includegraphics[width=\textwidth]{images/part9_.jpg}
-	    \caption{Chenoweth}
-	    \label{fig:face2}
-	\end{subfigure}
-	\end{figure}
-	
 	\vspace{10mm}
 	\textbf{Hidden Unit Selection}
 	To pick the best number of hidden units, we selected one based on its performance.
@@ -521,6 +506,9 @@ blah
 		On 600 hidden units --
 	\end{minted}
 	
+	\textbf{Weight Visualization}
+
+		
 	\begin{figure}[ht!]
 	\centering
 	\begin{subfigure}[b]{0.3\textwidth}
