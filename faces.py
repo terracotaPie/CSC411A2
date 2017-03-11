@@ -21,19 +21,32 @@ from rgb2gray import *
 # display images in grayscale
 gray()
 
-RESULTS_FOLDER = '/home/zerochill/CSC411A2/images'
-SAVED_IMGS = '/home/zerochill/CSC411A2/img_data/tf/actor_imgs_NOFILENAME.p'
+RESULTS_FOLDER = os.getcwd() + '/images'
+SAVED_IMGS = os.getcwd() + '/img_data/tf/actor_imgs.p'
 ACTORS = ['Fran Drescher', 'America Ferrera', 'Kristin Chenoweth', 'Alec Baldwin', 'Bill Hader', 'Steve Carell']
 
 
+
+'''
+    Return a batch of images of size N.
+    This is for minibatching.
+'''
 def get_train_batch(imgset, labels, N, imgset_len):
+    # randomize the images selected in this batch
     batch_indices = random.choice(imgset_len, N, replace=False)
+    
+    # get images and labels
     batch = imgset[batch_indices, :]
     batch_labels = labels[batch_indices, :]
 
     return batch, batch_labels
 
 
+
+'''
+    Return the set of images in a single input vector(X)
+    and their one-hot encodings(Y).
+'''
 def get_xy_vectors(actor_to_imgs, i, n, k):
     batch_xs = zeros((0, n))
     batch_y_s = zeros((0, 6))
@@ -49,6 +62,10 @@ def get_xy_vectors(actor_to_imgs, i, n, k):
 
 
 
+'''
+    Preprocess the images before passing them through the neural network.
+    Grayscale, flatten and normalize the images passed through.
+'''
 def preprocess(raw_actor_to_imgs):
     actor_to_imgs = {}
     
@@ -94,13 +111,19 @@ def preprocess(raw_actor_to_imgs):
 
     return actor_to_imgs
 
-
+'''
+    Train a single-hidden layer neural network to classify images and detect
+    which actor of the 6 in ACTORS it is.
+    
+    Report the accuracy of the neural network over 5000 iterations of training
+    and plot the performance.
+'''
 def part7(train_images, train_labels, val_images, val_labels, test_images, test_labels):
     tf.set_random_seed(48548514)
-    x = tf.placeholder(tf.float32, [None, 784])
+    x = tf.placeholder(tf.float32, [None, 3600])
 
     nhid = 300                # number of hidden units
-    W0 = tf.Variable(tf.random_normal([784, nhid], stddev=0.01))         # layer 1 weights
+    W0 = tf.Variable(tf.random_normal([3600, nhid], stddev=0.01))         # layer 1 weights
     b0 = tf.Variable(tf.random_normal([nhid], stddev=0.01))
 
     W1 = tf.Variable(tf.random_normal([nhid, 6], stddev=0.01))           # hidden layer weights
@@ -183,10 +206,10 @@ def part7(train_images, train_labels, val_images, val_labels, test_images, test_
 def part9(train_images, train_labels, val_images, val_labels, test_images, test_labels, nhid):
 
     tf.set_random_seed(31854692)
-    x = tf.placeholder(tf.float32, [None, 784])
+    x = tf.placeholder(tf.float32, [None, 3600])
 
     # nhid = 300
-    W0 = tf.Variable(tf.random_normal([784, nhid], stddev=0.01))         # layer 1 weights
+    W0 = tf.Variable(tf.random_normal([3600, nhid], stddev=0.01))         # layer 1 weights
     b0 = tf.Variable(tf.random_normal([nhid], stddev=0.01))
 
     W1 = tf.Variable(tf.random_normal([nhid, 6], stddev=0.01))           # hidden layer weights
@@ -217,32 +240,35 @@ def part9(train_images, train_labels, val_images, val_labels, test_images, test_
     train_acc = []            # y axis values to plot
     validation_acc = []
     test_acc = []
-    
-
+        
+    print("Processing")
     for i in range(5001):
         
         # train network
         batch_xs, batch_ys = get_train_batch(train_images, train_labels, 50, len(train_images))
         sess.run(train_step, feed_dict={x: batch_xs, y_: batch_ys})
-   
-        # print progress every 50 iterations
-        if i % 50 == 0:
-            print('\nitr = {:d}'.format(i))
+
         
-            train_results = sess.run(accuracy, feed_dict={x: train_images, y_: train_labels})
-            validation_results = sess.run(accuracy, feed_dict={x: val_images, y_: val_labels})
-            test_results = sess.run(accuracy, feed_dict={x: test_images, y_: test_labels})
+        # print progress every 100 iterations
+        if (i+1) % 50 == 0:
+            print(str(((i + 1)/5000) * 100) + '%')
+            # print('\nitr = {:d}'.format(i))
         
-            print("Accuracy on:")
-            print('    Training set', train_results)
-            print('    Validation set:', validation_results)
-            print('    Test set:', test_results)
+   #        #   train_results = sess.run(accuracy, feed_dict={x: train_images, y_: train_labels})
+            # validation_results = sess.run(accuracy, feed_dict={x: val_images, y_: val_labels})
+            # test_results = sess.run(accuracy, feed_dict={x: test_images, y_: test_labels})
+        
+   #        #   print("Accuracy on:")
+            # print('    Training set', train_results)
+            # print('    Validation set:', validation_results)
+            # print('    Test set:', test_results)
     
-            # record NN performance
-            x_vals.append(i)
-            train_acc.append(train_results)
-            validation_acc.append(validation_results)
-            test_acc.append(test_results)
+       #    #   # record NN performance
+            # x_vals.append(i)
+            # train_acc.append(train_results)
+            # validation_acc.append(validation_results)
+            # test_acc.append(test_results)
+        
 
     W0_ = sess.run(W0)
     W1_ = sess.run(W1)
@@ -262,7 +288,7 @@ def visualize_weights(W0, W1, i, num_hidden):
     plt.title(title_str)
     
     axes = fig.gca()
-    img = axes.imshow(W0[:,i].reshape((28,28)), cmap = cm.coolwarm)    
+    img = axes.imshow(W0[:,i].reshape((60,60)), cmap = cm.coolwarm)    
     fig.colorbar(img, shrink=0.5, aspect=5)
     
     # save the image
@@ -272,8 +298,8 @@ def visualize_weights(W0, W1, i, num_hidden):
 
 if __name__ == '__main__':
     ## RUN CODE
-    n = 28
-    num_pixels = n**2
+    n = 60
+    num_pixels = 3600
     num_labels = 6          # num_labels
     
     random.seed(554744718)
@@ -291,7 +317,7 @@ if __name__ == '__main__':
     test_imgs, test_labels = get_xy_vectors(actor_to_imgs, 2, num_pixels, num_labels)
     
     ## PART 7
-    # part7(train_imgs, train_labels, val_imgs, val_labels, test_imgs, test_labels)
+    part7(train_imgs, train_labels, val_imgs, val_labels, test_imgs, test_labels)
   
     ## PART 9
     # with 300 hidden units
