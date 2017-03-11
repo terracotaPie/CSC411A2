@@ -385,7 +385,7 @@ script. \textbf{Note} that the images are RGB NumPy arrays resized to $60 \times
 60 \times 3$ matrices then serialized here to make \texttt{faces.py} run faster.
 		 
 	The single \texttt{cPickle} file created is under
-\texttt{img\_data\/tf\/actor\_imgs.p}.
+\texttt{images/tf/actor\_imgs.p}.
 	
 	\texttt{faces.py} will open \texttt{actor\_imgs.p} and filter out a hardcoded
 list of unusable images that are not of an actor's face or too blurry.
@@ -393,9 +393,9 @@ list of unusable images that are not of an actor's face or too blurry.
 	\begin{figure}[ht!]
 	\centering
 	\begin{subfigure}[b]{0.3\textwidth}
-	    \includegraphics[width=\textwidth]{images/baldwin77-cropped.jpg}
-	    \caption{Alec Baldwin}
-	    \label{fig:face1}
+    \includegraphics[width=\textwidth]{images/baldwin77-cropped.jpg}
+    \caption{Alec Baldwin}
+    \label{fig:face1}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.3\textwidth}
 	    \includegraphics[width=\textwidth]{images/chenoweth109-cropped}
@@ -547,23 +547,23 @@ blah
 %
 
 
-%----------------------------------------------------------------------------------------
-%	PART 10
-%----------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
+	PART 10
+----------------------------------------------------------------------------------------
 \begin{homeworkProblem}
 
 
 We extracted the conv4 activations after we trained AlexNet on our set of of
 actor images in \texttt{get\_conv\_activations()}, using 5400 images(150 images
 per actor) deserialized from a pickle file
-\texttt{/img\_data/alexnet/actor\_imgs\_with\_filenames.p}.
+\texttt{images/alexnet/actor\_imgs\_with\_filenames.p}.
 
 Then we fed these activations into our NN in \texttt{part10()} which would train
 over 500 iterations then test its performance accuracy at detecting the correct
 actor on the training, validation and training set. It's performance at each
 iteration is outputted when this function is run.
 
-The NN performed signficantly better at classifying actors on the training set
+The NN performed significantly better at classifying actors on the training set
 it was trained on versus the validation and training set.
 
 \begin{minted}{python}
@@ -592,7 +592,7 @@ already coded in the given AlexNet code from
 \url{http://www.cs.toronto.edu/\~guerzhoy/tf\_alexnet/myalexnet\_forward\_newtf.py}.
 
 The image pickle file was created in the same format desribed in \textbf{Part 7}
-under \texttt{img\_data/alexnet/actor\_imgs\_with\_filename.p} using the
+under \texttt{images/alexnet/actor\_imgs\_with\_filename.p} using the
 \texttt{get\_all\_imgs.py} script.
 
 When this pickle file was deserialized it was preprocessed to remove any images
