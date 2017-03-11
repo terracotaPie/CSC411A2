@@ -360,17 +360,23 @@ def get_batch(offset,example_per_class=5):
 	
 	
 	This dictionary was read from a file called \texttt{actor\_imgs.p} using the \texttt{pickle} module to create a unique training, validation and test set.
-		
-	Each image passed through the neural network was preprocessed to standardize its values and characteristics so we could compare images on the same physical conditions as closely as possible.
 	
+	\emph{Input Preprocessing}
+	Each image passed through the neural network was preprocessed to standardize its values and characteristics so we could compare images on the same physical conditions as closely as possible.
 	
 	To preprocess each image we did the following:
 	\begin{itemize}
 		\item grayscale the image to convert the 3D RGB image to a 2D array \texttt{rgb2gray()} function given in class.
-		\item flattening the image array to a $1 \times 786$ vector stored in a NumPy array
-		\item normalize the image's pixels, their values are limited to values 0 to 1. This will allow us to compare images by standardizing the range of their pixel intensities
+		\item flattening the image array to a $1 \times 3600$ vector stored in a NumPy array
+		\item normalize the image's pixels, their values are limited to values 0 to 1.
 	\end{itemize}
 	
+	\emph{Weight Initialization}
+	The weights were initialized to some random x and y value on a normal distribution with a standard deviation of 0.1. The function \texttt{tf.random.normal()} was used to generate these values.
+
+	\emph{Activation Function}
+	Tanh activations were used in the hidden layer. The outputs of the tanh activations have a smaller chance of developing into a dead neuron during gradient descent.
+		
 	\emph{Neural Network Performance}
 	
 \end{homeworkProblem}
