@@ -21,7 +21,8 @@ from caffe_classes import class_names
 gray()
 
 RESULTS_FOLDER = os.getcwd() + '/images'
-SAVED_IMGS = os.getcwd() + '/img_data/alexnet/actor_imgs_ALEXNET.p'
+# SAVED_IMGS = os.getcwd() + '/img_data/alexnet/actor_imgs_ALEXNET.p'
+SAVED_IMGS = os.getcwd() + '/img_data/alexnet/actor_imgs.p'
 ACTORS = ['Fran Drescher', 'America Ferrera', 'Kristin Chenoweth', 'Alec Baldwin', 'Bill Hader', 'Steve Carell']
 
 
@@ -88,16 +89,26 @@ def get_train_batch(imgset, labels, N, imgset_len):
     conv4 activations of each actor, then normalize these and return them.
 '''
 def preprocess(raw_actor_to_imgs):
+    # BAD_IMGS is a list of images to remove from the image set. These images
+    # do not contain a distinguishable face.
+    BAD_IMGS = ['baldwin23.jpg', 'baldwin77.jpg', 'carell49.jpg','carell105.jpg',\
+    'carell115.jpg','chenoweth14.jpg','chenoweth32.jpg','chenoweth92.jpg',\
+    'chenoweth99.jpg','chenoweth109.jpg','drescher71.jpg','drescher98.jpg',\
+    'drescher121.jpg','ferrera129.jpg','hader76.jpg','hader115.jpg']
+    
     actor_to_imgs = {}
 
     # gather 3D numpy images
     for actor in raw_actor_to_imgs:
         img_list = []
-        for img in raw_actor_to_imgs[actor]:
-
-            # 3D image found keep this in the list of images
-            if img.ndim == 3:
-                img_list.append(img.T)
+        for tup in raw_actor_to_imgs[actor]:
+            filename, img = tup
+          
+            # filter out the bad imgs to not keep in the img_list
+            if filename not in BAD_IMGS:
+                # 3D image found keep this in the list of images
+                if img.ndim == 3:
+                    img_list.append(img.T)
 
         actor_to_imgs[actor] = img_list
 
