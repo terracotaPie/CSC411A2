@@ -134,13 +134,14 @@ def test_performance_mult():
 
 noise = scipy.stats.norm.rvs(scale=5,size=784*50*10)
 noise = noise.reshape(500,784)
+print("Part 5 - Generate noise")
 print(noise)
 
 
 # In[7]:
 
 # Do gradient Descent
-def train(plot=False):
+def train():
     global W0, b0, W1, b1
     plot_iters = []
     plot_performance = []
@@ -148,8 +149,6 @@ def train(plot=False):
     X, Y, examples_n = get_batch(0,50)
     X += noise
     for i in range(30):
-#         X, Y, examples_n = get_batch(i * 5,20)
-
         update = np.zeros(4)
 
         for j in range(examples_n):
@@ -167,10 +166,8 @@ def train(plot=False):
         b1 -= alpha * update[1]
         W0 -= alpha * update[2]
         b0 -= alpha * update[3]
-        if plot:
-            plot_iters.append(i * examples_n)
-            plot_performance.append(test_perf())
     return plot_iters,plot_performance
+print("Train multinomial network with noise dataset")
 W0,b0,W1,b1 = load_sample_weights()
 train()
 
@@ -218,8 +215,8 @@ X,Y,n = get_batch(0,50)
 X = X/255. + noise 
 theta0 = np.zeros(10 * 785)
 theta0 = theta0.reshape(10,785)
+print("Train linear classifier with noise dataset")
 theta = grad_descent(f, df, X, Y, theta0, 1e-7)
-test_performance_linear(theta)
 
 
 # In[10]:
@@ -238,3 +235,4 @@ X += noise
 noisy_image = X[0].reshape((28,28))
 output = plt.imshow(noisy_image)
 plt.savefig("images/noise_image.png")
+print("visualized and saved images/noise_image.png")

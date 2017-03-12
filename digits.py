@@ -52,14 +52,13 @@ def forward(x, W0, b0, W1, b1):
 def deriv_multilayer(W0, b0, W1, b1, x, L0, L1, y, y_):
     dCdL1 = y - y_
     dCdW1 = dot(L0, dCdL1.T)
-    dCdobydodh = dot(W1, dCdL1)
-    one_minus_h_sq = 1 - L0**2
+    dCdB  = dot(W1, dCdL1)
+    diff  = 1 - L0**2
 
-    dCdW0 = tile(dCdobydodh, 28 * 28).T * dot(x, (one_minus_h_sq.T))
-    dCdb1 = dCdL1
-    dCdb0 = dCdobydodh * one_minus_h_sq
+    dCdW0 = tile(dCdB, 28 * 28).T * dot(x, diff.T)
+    dCdb0 = dCdB * diff
 
-    return dCdW1, dCdb1, dCdW0, dCdb0
+    return dCdW1, dCdL1, dCdW0, dCdb0
 
 
 # ## Part 1 - Dataset Description
@@ -69,7 +68,7 @@ def deriv_multilayer(W0, b0, W1, b1, x, L0, L1, y, y_):
 #   * different thickness levels
 
 # In[32]:
-
+print("generating part 1")
 f, sub = plt.subplots(10, 10, figsize=(15, 15))
 for i in range(10):
     for j in range(10):
@@ -197,6 +196,7 @@ def train(plot=False):
 plot_iters = []
 plot_performance = []
 W0,b0,W1,b1 = load_sample_weights()
+print("Part 4 - Training the network")
 train(plot=False)
 test_perf()
 
@@ -210,26 +210,31 @@ for i in range(10):
         sub[i][j].imshow(W0.T[i * 10 + j].reshape((28,28)))
 
 plt.savefig("images/weights.png")
+print("visualized weight and saved images/weights.png")
 
 
 # In[13]:
+print("Part 5 - Plotting performance graph")
+skip = True
+if not skip:
+    W0,b0,W1,b1 = load_sample_weights()
+    plot_iters,plot_performance = train(plot=True)
 
-W0,b0,W1,b1 = load_sample_weights()
-plot_iters,plot_performance = train(plot=True)
-print(plot_iters)
-print(plot_performance)
-
-plt.figure()
-plt.plot(plot_iters,plot_performance)
-plt.ylabel('performance')
-plt.xlabel('iterations')
-plt.savefig("images/performance.png")
+    plt.figure()
+    plt.plot(plot_iters,plot_performance)
+    plt.ylabel('performance')
+    plt.xlabel('iterations')
+    plt.savefig("images/performance.png")
+else:
+    print("Skipping performance graph - set skip to true if needed")
 
 
 # In[ ]:
+print("Part 3a - comparing approximation and gradient function")
 
 def check_grad(x, y_, epsilon, w1_indices, w0_indices, b0_index, b1_index, W0,
                b0, W1, b1):
+    print("PART 3 - check gradient results")
     L0, L1, y = forward(x, W0, b0, W1, b1)
     f_x = cross_entropy(y, y_)
 
